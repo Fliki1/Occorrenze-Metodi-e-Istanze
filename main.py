@@ -5,18 +5,27 @@ from src import Parse, Comment
 
 
 def addVariables(table, tokens, filename):
+    """
+    Update Dataset variables contenente le instanze trovate nel progetto
+    :param table: variables dataset
+    :param tokens: code tokens line
+    :param filename: java file
+    :return: table updated
+    """
     for i in range(len(tokens)):
         if tokens[i][1] == "Variable" and tokens[i - 1][1] == "Class":
+            # se è una instanza di classe
             # table = table.append({"Filename":filename, "Varname":tokens[i][0],\
             #                       "Vartype":tokens[i-1][0]}, ignore_index = True)
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 1][0]]
-            table.drop_duplicates(inplace=True)
+            table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
         elif tokens[i][1] == "Variable" and tokens[i - 1][0] == ">":
+            # type safety java case eg: List<MyObj> pippo = new List<MyObj>();
             j = tokens.index(("<", "Operator"))
             # table = table.append({"Filename":filename, "Varname":tokens[i][0],\
             #                       "Vartype":tokens[j-1][0]}, ignore_index = True)
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[j - 1][0]]
-            table.drop_duplicates(inplace=True)
+            table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
     return table
 
 
@@ -103,7 +112,7 @@ def getActiveClass(classes, line_num):
 dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
-
+#https://github.com/tdebatty/java-LSH
 for commit in Repository('https://github.com/niharika2k00/Java').traverse_commits():
     #per ogni commit
     for file in commit.modified_files:
@@ -131,27 +140,44 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             classesInDeleted = lookForClasses(file.source_code_before)  # perché?
 
             for i, element in zip(range(len(lines)), lines):
-                print("deleted + added ", i , element)
+                ##############print("deleted + added ", i , element)
+                # ricerca nella linea la presenza di invocazione metodo - new instanza - commento
                 matchMethodCall = Comment.reMethodCall.search(element[1])
                 matchInstAss = Comment.reInstAss.search(element[1])
                 if Comment.isComment(Comment.reIsComment, element[1]):
-                    continue
+                    continue    # skip to next line
+
                 if matchMethodCall or matchInstAss:
                     tokens = Parse.parseLine(element[1])
+                    # eg invocazione di Metodo: Day arr[] = Day.values(); diventa
+                    # [('Day', 'Class'), ('arr', 'Variable'), ('[', 'Separator'), (']', 'Separator'), ('=', 'Operator'),
+                    # ('Day', 'Class'), ('.', 'Separator'), ('values', 'Method'), ('(', 'Separator'), (')', 'Separator'),
+                    # (';', 'Separator')]
+
+                    # Update Dataset
                     if dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])].empty:
+                        # new entry nel dataset
                         dataset.loc[len(dataset.index)] = [name, [change], element[0], [element[1]], [tokens], 0]
                     else:
+                        # old entry nel dataset
                         ind = dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])].index
                         if len(ind) != 1:
-                            print("")
-                            #print("counted the wrong number of indices")
+                            # ind = lista di indici di dataset in cui è presente lo stesso riferimento cercato: ERRORE
+                            print("counted the wrong number of indices")
+                            print("DEBUG ",dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])])
                         ind = ind[0]
-                        dataset.at[ind, "Change type"].append(change)
-                        dataset.at[ind, "Code"].append(element[1])
-                        dataset.at[ind, "Tokens"].append(tokens)
-                        dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1
+                        # update
+                        dataset.at[ind, "Change type"].append(change)   # lista cambiamenti [ADD,DELETE,DELETE...
+                        dataset.at[ind, "Code"].append(element[1])      # new code
+                        dataset.at[ind, "Tokens"].append(tokens)        # token new code
+                        dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1     # numero modifiche subite
+                # Update Variabili Instanze Set
                 if matchInstAss:
+                    print(variables)
+                    print(tokens)
+                    print(name)
                     variables = addVariables(variables, tokens, name)
+                # Update Methodi Set
                 if matchMethodCall:
                     if i < cutOffPoint:
                         activeClass = getActiveClass(classesInAdded, element[0])
