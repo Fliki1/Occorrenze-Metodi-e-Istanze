@@ -173,9 +173,6 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                         dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1     # numero modifiche subite
                 # Update Variabili Instanze Set
                 if matchInstAss:
-                    print(variables)
-                    print(tokens)
-                    print(name)
                     variables = addVariables(variables, tokens, name)
                 # Update Methodi Set
                 if matchMethodCall:
