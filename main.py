@@ -3,6 +3,7 @@ import pandas as pd
 
 from src import Parse, Comment
 
+#TODO: problema gestione casi String userName = scObj.nextLine(); // Read user input') vengono considerati commenti
 
 def addVariables(table, tokens, filename):
     """
@@ -96,8 +97,6 @@ def getActiveClass(classes, line_num):
     :return: Classe associata a quella riga secondo lookFroClasses eseguito in precedenza, None se non presente
     """
     activeClass = None
-    #print("classes", classes)
-    #print("line_num", line_num)
     for aux in classes:
         if line_num >= aux[0]:
             activeClass = aux[1]
@@ -128,8 +127,11 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             diff = file.diff_parsed
             added = diff["added"]
             deleted = diff["deleted"]
-            lines = deleted + added     # [(1, ''), (2, '// import java.util.*;'), (3,... puro codice solo modificato nel commit
+            lines = added + deleted     # [(1, ''), (2, '// import java.util.*;'), (3,... puro codice solo modificato nel commit
             cutOffPoint = len(added)
+            print("==================")
+            print("DIFF deleted")
+            print(deleted)
 
             # print(file.source_code)   # file.source_code = source code of the file (can be _None_ if the file is deleted or only renamed)
             # print(file.source_code_before)   # file.source_code_before = source code of the file before the change (can be _None_ if the file is added or only renamed)
@@ -137,10 +139,11 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             # lista (riga, classe) del codice corrente
             classesInAdded = lookForClasses(file.source_code)
             # lista (riga, classe) del codice come era prima
-            classesInDeleted = lookForClasses(file.source_code_before)  # perché?
+            classesInDeleted = lookForClasses(file.source_code_before)
 
             for i, element in zip(range(len(lines)), lines):
-                ##############print("deleted + added ", i , element)
+                print("added + deleted ",i, element)
+
                 # ricerca nella linea la presenza di invocazione metodo - new instanza - commento
                 matchMethodCall = Comment.reMethodCall.search(element[1])
                 matchInstAss = Comment.reInstAss.search(element[1])
@@ -163,7 +166,7 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                         ind = dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])].index
                         if len(ind) != 1:
                             # ind = lista di indici di dataset in cui è presente lo stesso riferimento cercato: ERRORE
-                            print("counted the wrong number of indices")
+                            print("Warning: counted the wrong number of indices")
                             print("DEBUG ",dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])])
                         ind = ind[0]
                         # update
@@ -173,19 +176,25 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                         dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1     # numero modifiche subite
                 # Update Variabili Instanze Set
                 if matchInstAss:
+                    print("VARIABILE di  ", tokens)
+                    print("i ", i, " cutoffPoint ", cutOffPoint)
                     variables = addVariables(variables, tokens, name)
-                # Update Methodi Set
+                # Update Metodi Set
                 if matchMethodCall:
+                    print("METODO")
+                    print("i ", i, " cutoffPoint ", cutOffPoint)
                     if i < cutOffPoint:
+                        print("< ADD")
                         activeClass = getActiveClass(classesInAdded, element[0])
                     else:
+                        print("> DELETE")
                         activeClass = getActiveClass(classesInDeleted, element[0])
                     methods = addMethods(methods, variables, tokens, name, element[0], activeClass)
 
 dataset.set_index(["Filename", "Line number"], inplace=True)
 dataset.sort_index(inplace=True)
-# dataset.to_csv("commitTable.csv")
-# dataset.to_excel("commitTable.xlsx")
+"""dataset.to_csv("DataSet-commitTable.csv")
+dataset.to_excel("DataSet-commitTable.xlsx")"""
 
 method_count = methods.value_counts(["MethodName", "Class", ])
 method_count.rename("Count", inplace=True)
