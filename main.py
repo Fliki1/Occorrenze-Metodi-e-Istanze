@@ -121,6 +121,7 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
 
             # nome classe
             name = file.filename
+            print(name)
             change = file.change_type.name  # ADD - MODIFY ...
 
             # ogni riga aggiunta o cancellata nel file {'added': [(1, ''), (2, '// import java.util.*;'), (3,... 'delete': ...}
@@ -130,8 +131,6 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             lines = added + deleted     # [(1, ''), (2, '// import java.util.*;'), (3,... puro codice solo modificato nel commit
             cutOffPoint = len(added)
             print("==================")
-            print("DIFF deleted")
-            print(deleted)
 
             # print(file.source_code)   # file.source_code = source code of the file (can be _None_ if the file is deleted or only renamed)
             # print(file.source_code_before)   # file.source_code_before = source code of the file before the change (can be _None_ if the file is added or only renamed)
@@ -142,13 +141,19 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             classesInDeleted = lookForClasses(file.source_code_before)
 
             for i, element in zip(range(len(lines)), lines):
-                print("added + deleted ",i, element)
+                print("added + deleted ", i, element)
 
-                # ricerca nella linea la presenza di invocazione metodo - new instanza - commento
+                # ricerca nella linea la presenza di invocazione commento - metodo - new instanza
+                if Comment.isComment(element[1]):
+                    # converto la tupla element in lista per poterla modificare e togliere il commento di troppo
+                    my_element = list(element)
+                    my_element[1] = Comment.removeComment(my_element[1])
+                    element = tuple(my_element)
+                    print("added + deleted ", i, element)
+                    #print("NO COMMENTO", element[1])
                 matchMethodCall = Comment.reMethodCall.search(element[1])
                 matchInstAss = Comment.reInstAss.search(element[1])
-                if Comment.isComment(Comment.reIsComment, element[1]):
-                    continue    # skip to next line
+
 
                 if matchMethodCall or matchInstAss:
                     tokens = Parse.parseLine(element[1])
@@ -174,20 +179,18 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                         dataset.at[ind, "Code"].append(element[1])      # new code
                         dataset.at[ind, "Tokens"].append(tokens)        # token new code
                         dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1     # numero modifiche subite
+
                 # Update Variabili Instanze Set
                 if matchInstAss:
                     print("VARIABILE di  ", tokens)
-                    print("i ", i, " cutoffPoint ", cutOffPoint)
+                    #print("i ", i, " cutoffPoint ", cutOffPoint)
                     variables = addVariables(variables, tokens, name)
                 # Update Metodi Set
                 if matchMethodCall:
-                    print("METODO")
-                    print("i ", i, " cutoffPoint ", cutOffPoint)
+                    print("METODO: ", element[1])
                     if i < cutOffPoint:
-                        print("< ADD")
                         activeClass = getActiveClass(classesInAdded, element[0])
                     else:
-                        print("> DELETE")
                         activeClass = getActiveClass(classesInDeleted, element[0])
                     methods = addMethods(methods, variables, tokens, name, element[0], activeClass)
 
