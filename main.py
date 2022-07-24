@@ -32,26 +32,27 @@ def addVariables(table, tokens, filename):
 
 def addMethods(table, variables, tokens, filename, line_num, activeClass):
     for i in range(len(tokens)):
+        # Case: variable.method()
         if tokens[i][1] == "Method" and tokens[i - 2][1] == "Variable":
             vartype = checkVariableClass(variables, filename, tokens[i - 2][0])
             if vartype:
                 # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
                 #                       "Class":vartype, "Line number":line_num},\
                 #                      ignore_index = True)
-                table.loc[len(table.index)] = [filename, tokens[i][0], vartype, \
-                                               activeClass, line_num]
+                table.loc[len(table.index)] = [filename, tokens[i][0], vartype, activeClass, line_num]
+        # Case: class.method()
         elif tokens[i][1] == "Method" and tokens[i - 2][1] == "Class":
             # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
             #                       "Class":tokens[i-2][0], "Line number":line_num},\
             #                      ignore_index = True)
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 2][0], \
-                                           activeClass, line_num]
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 2][0], activeClass, line_num]
+        # Case:
         elif tokens[i][1] == "Method" and tokens[i - 4][1] == "Class":
+            print("Caso strano ", tokens)
             # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
             #                       "Class":tokens[i-4][0], "Line number":line_num},\
             #                      ignore_index = True)
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 4][0], \
-                                           activeClass, line_num]
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 4][0], activeClass, line_num]
     return table
 
 
@@ -62,7 +63,7 @@ def checkVariableClass(table, filename, varname):
         #print("Multiple variables with the same name detected in the same file.")
         return
     elif auxset.shape[0] == 0:
-        #print("Variable declaration not previously found")
+        #print("Variable declaration not previously found") # TODO: gestire l'ordine di generazione dei dati
         return
     else:
         return auxset.iat[0, 2]
@@ -94,7 +95,7 @@ def getActiveClass(classes, line_num):
     Riconoscere la classe analizzata based on lookForClasses precedentemente eseguito (riga, classe)
     :param classes: lista di classi a conoscenza [(1, 'test'), (22, 'ParentTest'), (33, 'test')]
     :param line_num: riga analizzata
-    :return: Classe associata a quella riga secondo lookFroClasses eseguito in precedenza, None se non presente
+    :return: Classe associata a quella riga secondo lookForClasses eseguito in precedenza, None se non presente
     """
     activeClass = None
     for aux in classes:
@@ -143,15 +144,13 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             multicomments = False
 
             for i, element in zip(range(len(lines)), lines):
-                print("added + deleted ", i, element)
+                #print("added + deleted ", i, element)
 
                 # ricerca nella linea la presenza di pluri-commento
                 if Comment.isStartMultipleComment(element[1]):
                     multicomments = True
-                    print("Inizio /*")
                 if Comment.isEndMultipleComment(element[1]):
                     multicomments = False
-                    print("Fine /*")
                 if multicomments:
                     continue
 
@@ -161,7 +160,7 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                     my_element = list(element)
                     my_element[1] = Comment.removeComment(my_element[1])
                     element = tuple(my_element)
-                    print("added + deleted ", i, element)
+                    #print("added + deleted ", i, element)
                     #print("NO COMMENTO", element[1])
                 matchMethodCall = Comment.reMethodCall.search(element[1])
                 matchInstAss = Comment.reInstAss.search(element[1])
@@ -195,7 +194,6 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                 # Update Variabili Instanze Set
                 if matchInstAss:
                     print("VARIABILE di  ", element[1])
-                    #print("i ", i, " cutoffPoint ", cutOffPoint)
                     variables = addVariables(variables, tokens, name)
                 # Update Metodi Set
                 if matchMethodCall:
@@ -206,6 +204,7 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
                         activeClass = getActiveClass(classesInDeleted, element[0])
                     methods = addMethods(methods, variables, tokens, name, element[0], activeClass)
 
+# Printing
 dataset.set_index(["Filename", "Line number"], inplace=True)
 dataset.sort_index(inplace=True)
 """dataset.to_csv("DataSet-commitTable.csv")
