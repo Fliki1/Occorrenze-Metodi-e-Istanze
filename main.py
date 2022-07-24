@@ -139,12 +139,24 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
             classesInAdded = lookForClasses(file.source_code)
             # lista (riga, classe) del codice come era prima
             classesInDeleted = lookForClasses(file.source_code_before)
+            # status MultipleComment
+            multicomments = False
 
             for i, element in zip(range(len(lines)), lines):
                 print("added + deleted ", i, element)
 
-                # ricerca nella linea la presenza di invocazione commento - metodo - new instanza
-                if Comment.isComment(element[1]):
+                # ricerca nella linea la presenza di pluri-commento
+                if Comment.isStartMultipleComment(element[1]):
+                    multicomments = True
+                    print("Inizio /*")
+                if Comment.isEndMultipleComment(element[1]):
+                    multicomments = False
+                    print("Fine /*")
+                if multicomments:
+                    continue
+
+                # ricerca nella linea la presenza di invocazione singolo-commento - metodo - new instanza
+                if Comment.isSingleComment(element[1]):
                     # converto la tupla element in lista per poterla modificare e togliere il commento di troppo
                     my_element = list(element)
                     my_element[1] = Comment.removeComment(my_element[1])
@@ -182,7 +194,7 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
 
                 # Update Variabili Instanze Set
                 if matchInstAss:
-                    print("VARIABILE di  ", tokens)
+                    print("VARIABILE di  ", element[1])
                     #print("i ", i, " cutoffPoint ", cutOffPoint)
                     variables = addVariables(variables, tokens, name)
                 # Update Metodi Set

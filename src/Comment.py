@@ -8,12 +8,13 @@ reInstAss = re.compile('\s*\S+\s*=\s*new\s*\S+\(.*\)\s*;\s*')   # new instanza
 # Espressioni regolari per i commenti
 
 reIsComment = []
-reIsComment.append(re.compile('\s*//.*'))                       # // commento singola riga
-reIsComment.append(re.compile('\s*/\*.*'))                      # /* commento di plurime righe
+reIsComment.append(re.compile('\s*//.*'))                       # //       commento singola riga
+reIsComment.append(re.compile('\s*/\*.*'))                      # /* start commento di plurime righe
+reIsComment.append(re.compile('\s*\*/'))                        # */ end   commento di plurime righe
 
 # reClassDeclaration = re.compile(".*class\s+\S+\s*")           # regex per dichiarazione di classi: public 'class' A{
                                                                 # sostituita con la libreria javalang (Parse.py)
-def isComment(string):
+def isSingleComment(string):
     """
     Si usano espressioni regolari anche per controllare che la riga di codice non sia stata commentata
     Javalang non riesce a processare questo tipo di controllo
@@ -21,22 +22,9 @@ def isComment(string):
     :param string: line code
     :return: boolean: True: commented line code - False: otherwise
     """
-    if reIsComment[1].search(string):
-        print("Trovato /*")
+
+    if reIsComment[0].search(string):
         return True
-
-    elif reIsComment[0].search(string):
-        print("Trovato //")
-        return True
-
-
-    """matches = []
-    for regEx in reIsComment:
-        matches.append(regEx.search(string))
-    if matches.count(None) != len(matches):
-        print(matches.count(None), len(matches))
-        print("commento")
-        return True"""
     return False
 
 def removeComment(string):
@@ -45,7 +33,18 @@ def removeComment(string):
     :param string: riga di codice commentata
     :return: porzione di riga di codice non commentata
     """
+
     if reIsComment[0].search(string):
         indcom = string.index('//')
         return (string[:indcom])
     return string
+
+def isStartMultipleComment(string):
+    if reIsComment[1].search(string):
+        return True
+    return False
+
+def isEndMultipleComment(string):
+    if reIsComment[2].search(string):
+        return True
+    return False
