@@ -3,7 +3,8 @@ import pandas as pd
 
 from src import Parse, Comment
 
-#TODO: problema gestione casi String userName = scObj.nextLine(); // Read user input') vengono considerati commenti
+#TODO: gestione casi LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
+#TODO: gestione this.mh = new ecc non trova mh e forse salva this.mh
 
 def addVariables(table, tokens, filename):
     """
@@ -15,10 +16,11 @@ def addVariables(table, tokens, filename):
     """
     for i in range(len(tokens)):
         if tokens[i][1] == "Variable" and tokens[i - 1][1] == "Class":
-            # se è una instanza di classe
+            # case Class x = new Class()
             # table = table.append({"Filename":filename, "Varname":tokens[i][0],\
             #                       "Vartype":tokens[i-1][0]}, ignore_index = True)
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 1][0]]
+            print([filename, tokens[i][0], tokens[i - 1][0]])
             table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
         elif tokens[i][1] == "Variable" and tokens[i - 1][0] == ">":
             # type safety java case eg: List<MyObj> pippo = new List<MyObj>();
@@ -26,7 +28,25 @@ def addVariables(table, tokens, filename):
             # table = table.append({"Filename":filename, "Varname":tokens[i][0],\
             #                       "Vartype":tokens[j-1][0]}, ignore_index = True)
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[j - 1][0]]
+            print([filename, tokens[i][0], tokens[j - 1][0]])
             table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
+        elif tokens[i][1] == "Variable" and tokens[i-1][1] == "Separator" and tokens[i-2][0] == "this" \
+                and (tokens[i + 3][1] == "Class" or tokens[i + 3][1] == "Function"):
+            # case: this.mb = new Class()
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 3][0]]
+            print([filename, tokens[i][0], tokens[i + 3][0]])
+            table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
+        elif tokens[i][1] == "Variable" and tokens[i-1][1] == "Separator" and tokens[i-2][0] == "this" \
+                and (tokens[i + 6][1] == "Class" or tokens[i + 6][1] == "Function"):
+            # case this.mb[i] = new Class()
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 6][0]]
+            print([filename, tokens[i][0], tokens[i + 6][0]])
+            table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
+        elif tokens[i][1] == "Variable" and i == 0 and tokens[i+2][0] == "new":
+            # case: filereader = new FileReader()
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 3][0]]
+            print([filename, tokens[i][0], tokens[i + 3][0]])
+            table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
     return table
 
 
@@ -46,9 +66,8 @@ def addMethods(table, variables, tokens, filename, line_num, activeClass):
             #                       "Class":tokens[i-2][0], "Line number":line_num},\
             #                      ignore_index = True)
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i - 2][0], activeClass, line_num]
-        # Case:
+        # Case: chiamate annidate di metodo es. Logger.getLogger(LSH.class.getName()).log(Level.SEVERE, null, ex);
         elif tokens[i][1] == "Method" and tokens[i - 4][1] == "Class":
-            print("Caso strano ", tokens)
             # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
             #                       "Class":tokens[i-4][0], "Line number":line_num},\
             #                      ignore_index = True)
@@ -60,10 +79,11 @@ def checkVariableClass(table, filename, varname):
     auxset = table[table["Filename"] == filename]
     auxset = auxset[auxset["Varname"] == varname]
     if auxset.shape[0] > 1:
-        #print("Multiple variables with the same name detected in the same file.")
+        # es. v1.setEntry(rand.nextInt(n), rand.nextDouble());
+        print("Multiple variables with the same name detected in the same file/line.")
         return
     elif auxset.shape[0] == 0:
-        #print("Variable declaration not previously found") # TODO: gestire l'ordine di generazione dei dati
+        print("Variable declaration not previously found:", varname)  # TODO: gestire l'ordine di generazione dei dati?
         return
     else:
         return auxset.iat[0, 2]
@@ -112,8 +132,9 @@ def getActiveClass(classes, line_num):
 dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
-#https://github.com/tdebatty/java-LSH
-for commit in Repository('https://github.com/niharika2k00/Java').traverse_commits():
+
+#https://github.com/niharika2k00/Java
+for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commits():
     #per ogni commit
     for file in commit.modified_files:
         # se è stato modificato un file .java
@@ -193,11 +214,11 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
 
                 # Update Variabili Instanze Set
                 if matchInstAss:
-                    print("VARIABILE di  ", element[1])
+                    print("VARIABILE: ", element[1])
                     variables = addVariables(variables, tokens, name)
                 # Update Metodi Set
                 if matchMethodCall:
-                    print("METODO: ", element[1])
+                    #print("METODO: ", element[1])
                     if i < cutOffPoint:
                         activeClass = getActiveClass(classesInAdded, element[0])
                     else:
@@ -207,8 +228,13 @@ for commit in Repository('https://github.com/niharika2k00/Java').traverse_commit
 # Printing
 dataset.set_index(["Filename", "Line number"], inplace=True)
 dataset.sort_index(inplace=True)
-"""dataset.to_csv("DataSet-commitTable.csv")
-dataset.to_excel("DataSet-commitTable.xlsx")"""
+dataset.to_csv("DataSet-commitTable.csv")
+dataset.to_excel("DataSet-commitTable.xlsx")
+
+variables.set_index(["Filename", "Varname"], inplace=True)
+variables.sort_index(inplace=True)
+variables.to_csv("variablesTable.csv")
+variables.to_excel("variablesTable.xlsx")
 
 method_count = methods.value_counts(["MethodName", "Class", ])
 method_count.rename("Count", inplace=True)
