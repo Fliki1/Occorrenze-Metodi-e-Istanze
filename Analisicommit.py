@@ -53,20 +53,17 @@ def addMethods(table, variables, tokens, filename, line_num, activeClass):
                 # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
                 #                       "Class":vartype, "Line number":line_num},\
                 #                      ignore_index = True)
-                table.loc[len(table.index)] = [filename, tokens[i][0], vartype,\
-                                               activeClass, line_num]
+                table.loc[len(table.index)] = [filename, tokens[i][0], vartype, activeClass, line_num]
         elif tokens[i][1] == "Method" and tokens[i-2][1] == "Class":
             # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
             #                       "Class":tokens[i-2][0], "Line number":line_num},\
             #                      ignore_index = True)
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i-2][0],\
-                                           activeClass, line_num]
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i-2][0], activeClass, line_num]
         elif tokens[i][1] == "Method" and tokens[i-4][1] == "Class":
             # table = table.append({"Filename":filename, "MethodName":tokens[i][0],\
             #                       "Class":tokens[i-4][0], "Line number":line_num},\
             #                      ignore_index = True)
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i-4][0],\
-                                           activeClass, line_num]
+            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i-4][0], activeClass, line_num]
     return table
     
 def checkVariableClass(table, filename, varname):
@@ -107,8 +104,7 @@ def getActiveClass(classes, line_num):
             activeClass = aux[1]
     return activeClass
 
-dataset = pd.DataFrame(columns=["Filename","Change type", "Line number", "Code", "Tokens", "NumEdit"],\
-                       index = [])
+dataset = pd.DataFrame(columns=["Filename","Change type", "Line number", "Code", "Tokens", "NumEdit"], index = [])
 variables = pd.DataFrame(columns=["Filename","Varname","Vartype"], index = [])
 methods = pd.DataFrame(columns=["Filename","MethodName","Class", "CallingClass", "Line number"], index=[])
 
@@ -124,8 +120,8 @@ reIsComment.append(re.compile('\s*/\*.*'))
 # for commit in Repository('https://github.com/mauricioaniche/repodriller').traverse_commits():
 for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commits():
     for file in commit.modified_files:
-        if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY"\
-        or file.change_type.name == "DELETE") and file.filename[-5:] == ".java":
+        if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY" or file.change_type.name == "DELETE") \
+                and file.filename[-5:] == ".java":
             name = file.filename
             diff = file.diff_parsed
             change = file.change_type.name

@@ -30,8 +30,8 @@ def apiMining(dataset, variables, methods, repo, total_commits, verbose):
         # per ogni commit
         for file in commit.modified_files:
             # se è stato modificato un file .java
-            if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY" \
-                or file.change_type.name == "DELETE") and file.filename[-5:] == ".java":
+            if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY" or file.change_type.name == "DELETE") \
+                    and file.filename[-5:] == ".java":
 
                 # nome classe
                 name = file.filename
@@ -81,13 +81,13 @@ def apiMining(dataset, variables, methods, repo, total_commits, verbose):
                     matchMethodCall = Comment.reMethodCall.search(element[1])
                     matchInstAss = Comment.reInstAss.search(element[1])
 
-                    if matchMethodCall or matchInstAss:
-                        tokens = Parse.parseLine(element[1])
-                        # eg invocazione di Metodo: Day arr[] = Day.values(); diventa
-                        # [('Day', 'Class'), ('arr', 'Variable'), ('[', 'Separator'), (']', 'Separator'), ('=', 'Operator'),
-                        # ('Day', 'Class'), ('.', 'Separator'), ('values', 'Method'), ('(', 'Separator'), (')', 'Separator'),
-                        # (';', 'Separator')]
+                    tokens = Parse.parseLine(element[1])
+                    # eg invocazione di Metodo: Day arr[] = Day.values(); diventa
+                    # [('Day', 'Class'), ('arr', 'Variable'), ('[', 'Separator'), (']', 'Separator'), ('=', 'Operator'),
+                    # ('Day', 'Class'), ('.', 'Separator'), ('values', 'Method'), ('(', 'Separator'), (')', 'Separator'),
+                    # (';', 'Separator')]
 
+                    if matchMethodCall or matchInstAss:
                         # Update Dataset
                         if dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])].empty:
                             # new entry nel dataset

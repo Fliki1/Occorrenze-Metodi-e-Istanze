@@ -9,7 +9,7 @@ from src import Print, Api
 # https://github.com/tdebatty/java-LSH
 # https://github.com/niharika2k00/Java
 
-#TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
+# TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
 
 # create logger
 logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): global logger
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): glob
 dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
+
 
 def remove_duplicates(urls):
     """ Return list dei urls non duplicati """
@@ -61,6 +62,7 @@ def arg_parse():
     parser.add_argument("-v", "--verbose", help="restituisce output verboso", action="store_true")
     args = parser.parse_args()
     return args.verbose
+
 
 if __name__ == "__main__":
     # Log: gestisce sia la console che il salvataggio dei log [-v] (diversi per modulo)
