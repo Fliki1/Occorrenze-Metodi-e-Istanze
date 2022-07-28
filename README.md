@@ -43,7 +43,8 @@ pip install -r requirements.txt
 ````
 Start script
 ````commandline
-python main.py
+python main.py [-v]
+Enter Gits Repositories: https://github.com/tdebatty/java-LSH, https://github.com/...
 ````
 
 ## Structure
@@ -56,7 +57,11 @@ dataset di supporto (dataset/variables/methods)
 * [Parse](./src/Parse.py) permette di suddividere in tokens ogni riga del codice modificato
 per le successive analisi e ricerca di keywords opportune tramite l'uso
 di espressioni regolari regex.
+* [Api](./src/Api.py) cuore dello script
+* [Class](./src/Class.py) filtra le classi presenti nel repository corrente
 * [Print](./src/Print.py) salva i DataFrame ottenuti in [results](./results)
+* [ProgressionBar](./src/ProgressionBar.py) print status progression sul terminale
+* [Analisi commit](Analisi%20commit.py) Script di partenza e ispirazione
 
 ## Esiti
 Esempio caso di: [java-LSH](https://github.com/tdebatty/java-LSH)
@@ -137,6 +142,3 @@ pip install -r requirements.txt
 ````
 2. Espandere la metrica: modifiche a linee di codice vicine forse da
 considerare come linkate alla chiamata API poco dopo successiva
-3. Esiti
-4. modificare la chiamata a più url
-5. salvare gli esiti da qualche altra parte
