@@ -61,7 +61,7 @@ di espressioni regolari regex.
 * [Class](./src/Class.py) filtra le classi presenti nel repository corrente
 * [Print](./src/Print.py) salva i DataFrame ottenuti in [results](./results)
 * [ProgressionBar](./src/ProgressionBar.py) print status progression sul terminale
-* [Analisi commit](Analisi%20commit.py) Script di partenza e ispirazione
+* [Analisicommit](Analisicommit.py) Script di partenza e ispirazione
 
 ## Esiti
 Esempio caso di: [java-LSH](https://github.com/tdebatty/java-LSH)
