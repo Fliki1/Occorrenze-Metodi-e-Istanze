@@ -81,13 +81,13 @@ def apiMining(dataset, variables, methods, repo, total_commits, verbose):
                     matchMethodCall = Comment.reMethodCall.search(element[1])
                     matchInstAss = Comment.reInstAss.search(element[1])
 
-                    tokens = Parse.parseLine(element[1])
-                    # eg invocazione di Metodo: Day arr[] = Day.values(); diventa
-                    # [('Day', 'Class'), ('arr', 'Variable'), ('[', 'Separator'), (']', 'Separator'), ('=', 'Operator'),
-                    # ('Day', 'Class'), ('.', 'Separator'), ('values', 'Method'), ('(', 'Separator'), (')', 'Separator'),
-                    # (';', 'Separator')]
-
                     if matchMethodCall or matchInstAss:
+                        tokens = Parse.parseLine(element[1])
+                        # eg invocazione di Metodo: Day arr[] = Day.values(); diventa
+                        # [('Day', 'Class'), ('arr', 'Variable'), ('[', 'Separator'), (']', 'Separator'), ('=', 'Operator'),
+                        # ('Day', 'Class'), ('.', 'Separator'), ('values', 'Method'), ('(', 'Separator'), (')', 'Separator'),
+                        # (';', 'Separator')]
+
                         # Update Dataset
                         if dataset.loc[(dataset["Filename"] == name) & (dataset["Line number"] == element[0])].empty:
                             # new entry nel dataset
@@ -109,18 +109,18 @@ def apiMining(dataset, variables, methods, repo, total_commits, verbose):
                             dataset.at[ind, "Tokens"].append(tokens)  # token new code
                             dataset.at[ind, "NumEdit"] = dataset.at[ind, "NumEdit"] + 1  # numero modifiche subite
 
-                    # Update Variabili Instanze Set
-                    if matchInstAss:
-                        logger.info(f'Variabile:, {element[1]}')  # Variabile found
-                        # print("VARIABILE: ", element[1])
-                        variables = ManageDataset.addVariables(variables, tokens, name, verbose)
-                    # Update Metodi Set
-                    if matchMethodCall:
-                        logger.info(f'Methodo:, {element[1]}')  # Method found
-                        # print("METODO: ", element[1])
-                        if i < cutOffPoint:
-                            activeClass = Class.getActiveClass(classesInAdded, element[0])
-                        else:
-                            activeClass = Class.getActiveClass(classesInDeleted, element[0])
-                        methods = ManageDataset.addMethods(methods, variables, tokens, name, element[0], activeClass,
-                                                           verbose)
+                        # Update Variabili Instanze Set
+                        if matchInstAss:
+                            logger.info(f'Variabile:, {element[1]}')  # Variabile found
+                            # print("VARIABILE: ", element[1])
+                            variables = ManageDataset.addVariables(variables, tokens, name, verbose)
+                        # Update Metodi Set
+                        if matchMethodCall:
+                            logger.info(f'Methodo:, {element[1]}')  # Method found
+                            # print("METODO: ", element[1])
+                            if i < cutOffPoint:
+                                activeClass = Class.getActiveClass(classesInAdded, element[0])
+                            else:
+                                activeClass = Class.getActiveClass(classesInDeleted, element[0])
+                            methods = ManageDataset.addMethods(methods, variables, tokens, name, element[0],
+                                                               activeClass, verbose)
