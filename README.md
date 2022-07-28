@@ -119,7 +119,10 @@ e quali classi ne invocano l'utilizzo
 | similarity | SuperBit | 9     | ['MinHash', 'SuperBit', 'MinHashExample', 'SuperBitExample', 'SuperBitSparseExample']                                                                 |
 | ...        | ...      | ...   | [...]                                                                                                                                                 |
 
-
+Possibili chiamate e istanze non conteggiate sono riportate nei file di log.
+Questo accade quando non si trovano le dichiarazioni di queste istanze, vedi 
+passati come parametri o casting, o invocazione di metodi di librerie importate
+(System.out.print(...))
 
 #### TODO:
 
