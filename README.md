@@ -58,7 +58,67 @@ per le successive analisi e ricerca di keywords opportune tramite l'uso
 di espressioni regolari regex.
 
 ## Esiti
-todo
+Esempio caso di: [java-LSH](https://github.com/tdebatty/java-LSH)
+#### Variables
+DataFrame table che tiene traccia di quali istanze sono presenti nel 
+progetto e del tipo a essi associati
+
+| Filename         | Varname        | Vartype        |
+|------------------|----------------|----------------|
+| InitialSeed.java | mh             | MinHash        |
+| InitialSeed.java | mh2            | MinHash        |
+| InitialSeed.java | r              | Random         |
+| KShingling.java  | ks             | KShingling     |
+| LSH.java         | bufferedReader | BufferedReader |
+| LSH.java         | fileReader     | FileReader     |
+| LSH.java         | ks             | KShingling     |
+| LSH.java         | lines          | List           |
+| LSH.java         | lsh            | LSH            |
+| LSH.java         | mh             | MinHash        |
+| ...              | ...            | ...            |
+
+#### Methods
+DataFrame table che tiene traccia dei metodi invocati, la classe di appartenenza
+dei metodi, e la rispettiva riga e classe nei quali sono state invocate
+
+| Filename         | MethodName  | Class      | CallingClass | Line number |
+|------------------|-------------|------------|--------------|-------------|
+| InitialSeed.java | nextBoolean | Random     | InitialSeed  | 53          |
+| InitialSeed.java | signature   | MinHash    | InitialSeed  | 57          |
+| InitialSeed.java | signature   | MinHash    | InitialSeed  | 58          |
+| KShingling.java  | add         | KShingling | KShingling   | 40          |
+| KShingling.java  | add         | KShingling | KShingling   | 40          |
+| KShingling.java  | parse       | KShingling | KShingling   | 26          |
+| KShingling.java  | parse       | KShingling | KShingling   | 27          |
+| ...              | ...         | ...        | ...          | ...         |
+
+#### Dataset commit table
+| Filename         | Line number | Change type | Code                                                                                  | Tokens                                                                                                                                                                                                                                                                                                           | NumEdit |
+|------------------|-------------|-------------|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| InitialSeed.java | 46          | ['ADD']     | ['        MinHash mh = new MinHash(signature_size, dictionary_size, initial_seed)	']  | [[('MinHash', 'Class'), ('mh', 'Variable'), ('=', 'Operator'), ('new', 'Keyword'), ('MinHash', 'Function'), ('(', 'Separator'), ('signature_size', 'Variable'), (',', 'Separator'), ('dictionary_size', 'Variable'), (',', 'Separator'), ('initial_seed', 'Variable'), (')', 'Separator'), ('	', 'Separator')]]  | 0	      |
+| InitialSeed.java | 47          | ['ADD']     | ['        MinHash mh2 = new MinHash(signature_size, dictionary_size, initial_seed)	'] | [[('MinHash', 'Class'), ('mh2', 'Variable'), ('=', 'Operator'), ('new', 'Keyword'), ('MinHash', 'Function'), ('(', 'Separator'), ('signature_size', 'Variable'), (',', 'Separator'), ('dictionary_size', 'Variable'), (',', 'Separator'), ('initial_seed', 'Variable'), (')', 'Separator'), ('	', 'Separator')]] | 0	      |
+| InitialSeed.java | 50          | ['ADD']     | ['        Random r = new Random()	']                                                  | [[('Random', 'Class'), ('r', 'Variable'), ('=', 'Operator'), ('new', 'Keyword'), ('Random', 'Function'), ('(', 'Separator'), (')', 'Separator'), ('	', 'Separator')]]                                                                                                                                            | 0	      |
+| InitialSeed.java | 53          | ['ADD']     | ['            vector[i] = r.nextBoolean()	']                                          | [[('vector', 'Variable'), ('[', 'Separator'), ('i', 'Variable'), (']', 'Separator'), ('=', 'Operator'), ('r', 'Variable'), ('.', 'Separator'), ('nextBoolean', 'Method'), ('(', 'Separator'), (')', 'Separator'), ('	', 'Separator')]]                                                                           | 0	      |
+| InitialSeed.java | 57          | ['ADD']     | ['        println(mh.signature(vector))	']                                            | [[('println', 'Function'), ('(', 'Separator'), ('mh', 'Variable'), ('.', 'Separator'), ('signature', 'Method'), ('(', 'Separator'), ('vector', 'Variable'), (')', 'Separator'), (')', 'Separator'), ('	', 'Separator')]]                                                                                         | 0	      |
+| ...              | ...         | ...         | ...                                                                                   | ...                                                                                                                                                                                                                                                                                                              | ...	    |
+
+
+#### Final
+DataFrame table che tiene traccia dei metodi presenti nel 
+progetto, la classe di appartenenza, quante volte sono state invocate
+e quali classi ne invocano l'utilizzo
+
+| MethodName | Class    | Count | CallingClasses                                                                                                                                        |
+|------------|----------|-------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nextInt    | Random   | 47    | ['MinHash', 'SuperBit', 'LSHMinHashExample', 'SuperBitExample', 'SuperBitSparseExample', 'MinHashTest']                                               |
+| signature  | SuperBit | 25    | ['SuperBit', 'LSHMinHash', 'LSHSuperBit', 'MinHashExample', 'SuperBitExample', 'SuperBitSparseExample', 'MinHashTest', 'SuperBitTest', 'InitialSeed'] |
+| min        | Math     | 12    | ['LSH']                                                                                                                                               |
+| nextDouble | Random   | 9     | ['LSHMinHashExample', 'SuperBitSparseExample', 'SimpleLSHMinHashExample', 'SerializeExample', 'LSHMinHash.', 'SuperBitTest']                          |
+| add        | TreeSet  | 9     | ['KShingling', 'LSH', 'MinHash', 'MinHashExample', 'MinHashTest']                                                                                     |
+| similarity | SuperBit | 9     | ['MinHash', 'SuperBit', 'MinHashExample', 'SuperBitExample', 'SuperBitSparseExample']                                                                 |
+| ...        | ...      | ...   | [...]                                                                                                                                                 |
+
+
 
 #### TODO:
 

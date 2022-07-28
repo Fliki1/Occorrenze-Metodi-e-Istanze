@@ -1,9 +1,9 @@
 from pydriller import Repository
 import pandas as pd
 
-from src import Parse, Comment, ManageDataset
+from src import Parse, Comment, ManageDataset, Print
 
-#TODO: gestione casi LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
+#TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
 
 
 def lookForClasses(file):
@@ -61,7 +61,7 @@ for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commit
 
             # nome classe
             name = file.filename
-            print(name)
+            #print(name)
             change = file.change_type.name  # ADD - MODIFY ...
 
             # ogni riga aggiunta o cancellata nel file {'added': [(1, ''), (2, '// import java.util.*;'), (3,... 'delete': ...}
@@ -70,7 +70,7 @@ for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commit
             deleted = diff["deleted"]
             lines = added + deleted     # [(1, ''), (2, '// import java.util.*;'), (3,... puro codice solo modificato nel commit
             cutOffPoint = len(added)
-            print("==================")
+            #print("==================")
 
             # print(file.source_code)   # file.source_code = source code of the file (can be _None_ if the file is deleted or only renamed)
             # print(file.source_code_before)   # file.source_code_before = source code of the file before the change (can be _None_ if the file is added or only renamed)
@@ -132,7 +132,7 @@ for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commit
 
                 # Update Variabili Instanze Set
                 if matchInstAss:
-                    print("VARIABILE: ", element[1])
+                    #print("VARIABILE: ", element[1])
                     variables = ManageDataset.addVariables(variables, tokens, name)
                 # Update Metodi Set
                 if matchMethodCall:
@@ -143,28 +143,48 @@ for commit in Repository('https://github.com/tdebatty/java-LSH').traverse_commit
                         activeClass = getActiveClass(classesInDeleted, element[0])
                     methods = ManageDataset.addMethods(methods, variables, tokens, name, element[0], activeClass)
 
+Print.printData(dataset, variables, methods)
+"""# Fare il set_index dei dataframe causa problemi con la successiva analisi e gioco dei dati...
+# evitare se bisogna utilizzare questi per un analisi o conteggio vedi: methods
+
 # Printing Dataset
 dataset.set_index(["Filename", "Line number"], inplace=True)
 dataset.sort_index(inplace=True)
-dataset.to_csv("DataSet-commitTable.csv")
-dataset.to_excel("DataSet-commitTable.xlsx")
+dataset.to_csv("./results/DataSet-commitTable.csv")
+dataset.to_excel("./results/DataSet-commitTable.xlsx")
+# print(dataset[:20])
+
 # Printing Variables
 variables.set_index(["Filename", "Varname"], inplace=True)
 variables.sort_index(inplace=True)
-variables.to_csv("variablesTable.csv")
-variables.to_excel("variablesTable.xlsx")
+variables.to_csv("./results/variablesTable.csv")
+variables.to_excel("./results/variablesTable.xlsx")
+# print(variables[:20])
+
 # Printing Methods
-method_count = methods.value_counts(["MethodName", "Class", ])
+methods.to_csv("./results/methodsTable.csv")
+methods.to_excel("./results/methodsTable.xlsx")
+#print(methods_print[:20])
+
+# Printing Methods
+method_count = methods.value_counts(["MethodName", "Class" ]) # Return a Series containing counts of unique rows in the DataFrame.
+#method_count.columns = ["MethodName", "Class", "Count"]       # Rinomina le colonne
 method_count.rename("Count", inplace=True)
+
+# Creo una Serie che tiene [MethodName, Class, lista CallingClasses]
 classes = pd.Series(data=[[] for ind in range(len(method_count))], index=method_count.index)
-for i in method_count.index:
-    temp = methods.loc[methods["MethodName"] == i[0]]
-    for j in temp.index:
+# Salvo in classes la lista di classi che invocano ciascun metodo
+for i in method_count.index:    # per ciascuna coppia (MethodName e Class di appartenenza)
+    temp = methods.loc[methods["MethodName"] == i[0]]   # prendo tutte le entry in methods con lo stesso MethodName
+    for j in temp.index:        # per ciascuna entry presente in methods con questo MethodName
         if temp.loc[j]["CallingClass"] not in classes[i]:
-            classes[i].append(temp.loc[j]["CallingClass"])
+            classes[i].append(temp.loc[j]["CallingClass"])  # salvo tutte le classi che invocano questo metodo
 classes.rename("CallingClasses", inplace=True)
+
+# Concat method_count e classes
 method_count = pd.DataFrame(method_count)
 method_count = pd.concat([method_count, classes], axis=1)
 method_count.reset_index(inplace=True)
-method_count.to_csv("methodTable.csv", index=False)
-method_count.to_excel("methodTable.xlsx", index=False)
+# Save
+method_count.to_csv("./results/FinalmethodTable.csv", index=False)
+method_count.to_excel("./results/FinalmethodTable.xlsx", index=False)"""
