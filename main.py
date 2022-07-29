@@ -4,7 +4,7 @@ import argparse
 import logging
 import gc
 
-from src import Print, Api
+from src import Print, Api, Near
 
 # https://github.com/tdebatty/java-LSH
 # https://github.com/niharika2k00/Java
@@ -19,10 +19,13 @@ logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): glob
         dataset = tutte le linee di codice
         variables = associa ogni istanza alle sue classi di appartenenza
         methods = associa ogni metodo alla sua classe (in relazione all'istanza di appartenenza)
+        newmetric = ricerca correlazione modifiche vicine a invocazione di librerie
 """
 dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
+newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "LineBeforeModify",
+                                  "CorrelationModify", "APIModify"], index=[])
 
 
 def remove_duplicates(urls):
@@ -84,9 +87,11 @@ if __name__ == "__main__":
         total_commits = git.total_commits()
 
         # Core process
-        Api.apiMining(dataset, variables, methods, repo, total_commits, verb)
+        #Api.apiMining(dataset, variables, methods, repo, total_commits, verb)
+        # New metric
+        Near.nearMining(newmetric, repo, total_commits, verb)
         # Save results
-        Print.printData(commit.project_name, dataset, variables, methods)
+        # Print.printData(commit.project_name, dataset, variables, methods)
 
         # Reset Dataframe
         gc.collect()
@@ -94,5 +99,7 @@ if __name__ == "__main__":
                                index=[])
         variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
         methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
+        newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "LineBeforeModify",
+                                          "CorrelationModify", "APIModify"], index=[])
 
     logger.info('Fine del Hard Java API')
