@@ -54,3 +54,8 @@ def printData(repo_name, dataset, variables, methods):
     # Save
     method_count.to_csv("./results/" + repo_name + "/FinalMethodTable.csv", index=False)
     method_count.to_excel("./results/" + repo_name + "/FinalMethodTable.xlsx", index=False)
+
+    del dataset
+    del variables
+    del methods
+    del method_count

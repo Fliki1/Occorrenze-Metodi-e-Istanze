@@ -38,3 +38,21 @@ def parseIdentifier(lineList):
             else:
                 lineList[i] = (lineList[i][0], 'Variable')
     return lineList
+
+def parseNormLine(line):
+    """
+    Effettua il parsing di una linea di codice Java suddividendo il codice in token e estrapolando
+    la coppia tipo sintattico e valore corrispondente:
+    (Identifier - Operator - String - Separator...) e valore (roll, +, "ciao", ;...)
+    :param line: line code
+    :return: parseIdentifier(identificatore, valore)
+    """
+    lineTokens = list(javalang.tokenizer.tokenize(line))
+    # print(lineTokens)   # [Identifier "System" line 1, position 9, Separator "." line 1,
+    values = []
+    types = []
+    for token in lineTokens:
+        values.append(token.value)
+        types.append(type(token).__name__)
+    lineList = list(zip(values, types))     # (identificatore, valore)
+    return lineList

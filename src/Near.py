@@ -1,5 +1,6 @@
 from pydriller import Repository
 import logging
+import pandas as pd
 
 from src import Parse, Comment, ManageDataset, Class, ProgressionBar
 
@@ -30,6 +31,11 @@ def nearMining(newmetric, repo, total_commits, verbose):
     # Core methods
     for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
                                              prefix='Progress:', suffix='Complete', length=50):
+
+        # dataframe di supporto
+        methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Method", "Class"], index=[])
+        linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Line"], index=[])
+
         # per ogni commit
         for file in commit.modified_files:
             # se è stato modificato un file .java
@@ -39,16 +45,92 @@ def nearMining(newmetric, repo, total_commits, verbose):
                 # Info
                 name = file.filename
                 logger.info(f'FileName: {name}')  # name file
+                print(name)
                 change = file.change_type.name  # ADD - MODIFY ...
                 logger.info(f'Change: {change}')  # tipo di modifica
                 commithash = commit.hash
                 logger.info(f'CommitHash: {commithash}')  # hash commit
-                commitime = commit.committer_date
+                commitime = commit.committer_date.strftime("%d/%m/%Y")
                 logger.info(f'Time commit: {commitime}')    # time commit
 
+                # Setting
+                multicomments = False
+                # lista (riga, classe) del codice corrente
+                classes = Class.lookForClasses(file.source_code)
+                diff = file.diff_parsed
+                added = diff["added"]
+                deleted = diff["deleted"]
+                adel = added + deleted
 
 
-                """
+                # Se è un file cancellato o vuoto: skip
+                if file.source_code == None:
+                    continue
+
+                # codice per riga
+                lines = file.source_code.split("\n")
+                # Ricerca di invocazione metodi nel codice corrente
+                for i, element in enumerate(lines):
+                    #print("riga - codice ", i, element)
+
+                    # ricerca nella linea la presenza di pluri-commento
+                    if Comment.isStartMultipleComment(element):
+                        multicomments = True
+                    if Comment.isEndMultipleComment(element):
+                        multicomments = False
+                    if multicomments:
+                        continue
+
+                    # ricerca nella linea la presenza di invocazione singolo-commento - metodo
+                    if Comment.isSingleComment(element):
+                        element = Comment.removeComment(element)
+                        logger.info(f'No commento: {element}')  # no commento
+
+                    # Se trovo un metodo
+                    matchMethodCall = Comment.reMethodCall.search(element)
+
+                    if matchMethodCall:
+                        # Scompongo la linea in token
+                        tokens = Parse.parseLine(element)
+                        classx = Class.getActiveClass(classes, i)    # TODO: evitabile?
+                        methodfile.loc[len(methodfile.index)] = [commithash[-5:], commitime, name, i, tokens, classx]
+                        #print("metodo ", element)
+
+                # Linee modificate del file
+                for lineadel in adel:
+                    # Setting Commenti in linee modificate
+                    multicomments = False
+
+                    # ricerca nella linea la presenza di pluri-commento
+                    if Comment.isStartMultipleComment(lineadel[1]):
+                        multicomments = True
+                    if Comment.isEndMultipleComment(lineadel[1]):
+                        multicomments = False
+                    if multicomments:
+                        continue
+
+                    # ricerca nella linea la presenza di invocazione singolo-commento - metodo
+                    if Comment.isSingleComment(lineadel[1]):
+                        #print("commento lineadel ",lineadel)
+                        # converto la tupla element in lista per poterla modificare e togliere il commento di troppo
+                        my_lineadel = list(lineadel)
+                        my_lineadel[1] = Comment.removeComment(my_lineadel[1])
+                        lineadel = tuple(my_lineadel)
+                        logger.info(f'No commento in ADD-DEL: {lineadel[1]}')  # no commento nelle linee modificate
+                        #print("no commento lineadel ", lineadel)
+                    print("lineadel ", lineadel)
+
+                #linefile ["HashCommit", "Time", "Filename", "Line", "Token-Line"]
+
+                #print(methodfile)
+
+                # free methodclass
+                del methodfile
+                methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Method", "Class"],
+                                           index=[])
+
+
+            """
                 # ogni riga aggiunta o cancellata nel file 
                 # {'added': [(1, ''), (2, '// import java.util.*;'), (3,... 'delete': ...}
                 diff = file.diff_parsed
@@ -135,4 +217,5 @@ def nearMining(newmetric, repo, total_commits, verbose):
                                 activeClass = Class.getActiveClass(classesInDeleted, element[0])
                             methods = ManageDataset.addMethods(methods, variables, tokens, name, element[0],
                                                                activeClass, verbose)
-                """
+            """
+

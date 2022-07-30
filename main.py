@@ -94,6 +94,10 @@ if __name__ == "__main__":
         # Print.printData(commit.project_name, dataset, variables, methods)
 
         # Reset Dataframe
+        del dataset
+        del variables
+        del methods
+        del newmetric
         gc.collect()
         dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"],
                                index=[])
