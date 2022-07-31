@@ -48,7 +48,7 @@ def parseNormLine(line):
     :return: parseIdentifier(identificatore, valore)
     """
     lineTokens = list(javalang.tokenizer.tokenize(line))
-    # print(lineTokens)   # [Identifier "System" line 1, position 9, Separator "." line 1,
+    #print(lineTokens)   # [Identifier "System" line 1, position 9, Separator "." line 1,
     values = []
     types = []
     for token in lineTokens:

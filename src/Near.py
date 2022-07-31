@@ -1,6 +1,9 @@
 from pydriller import Repository
 import logging
 import pandas as pd
+import re
+from itertools import groupby
+from operator import itemgetter
 
 from src import Parse, Comment, ManageDataset, Class, ProgressionBar
 
@@ -20,24 +23,36 @@ def log(verbos):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
+def remove_chars(entry):
+    x = re.sub('\W', ' ', entry)
+    return(x)
+
+def get_range(dictionary, end):
+    return [i for i in dictionary if i[0] <= end]
+
+
+def getlistrighe(righenear):
+    return [rig[0] for rig in righenear]
+
 
 def nearMining(newmetric, repo, total_commits, verbose):
     # Setting log
     log(verbose)
 
     # finestra di righe da controllare
-    nearline = 10
+    nearline = 5
 
     # Core methods
     for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
                                              prefix='Progress:', suffix='Complete', length=50):
 
         # dataframe di supporto
-        methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Method", "Class"], index=[])
-        linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Line"], index=[])
+        methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Method", "Class"], index=[])
+        linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Line"], index=[])
 
         # per ogni commit
         for file in commit.modified_files:
+            print("===========================================================")
             # se è stato modificato un file .java
             if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY" or file.change_type.name == "DELETE") \
                     and file.filename[-5:] == ".java":
@@ -96,8 +111,66 @@ def nearMining(newmetric, repo, total_commits, verbose):
                         methodfile.loc[len(methodfile.index)] = [commithash[-5:], commitime, name, i, tokens, classx]
                         #print("metodo ", element)
 
+                # ==============================================================================================
+                # righe modificate prima del metodo
+
+                # per ciascuna chiamata API
+                for rowmethod in methodfile.itertuples(index=True, name='Pandas'):
+                    # print(row.Filename, row.Line)  # , row.Token_Method)
+                    # estrapoliamo le sole modifiche prima dell'invozaione del metodo
+                    righenear = get_range(adel, rowmethod.Line)
+                    # se non vuoto
+                    if righenear:
+                        # restringo agli ultimi {nearline} modifiche
+                        righenear = righenear[-nearline:]
+
+
+                    # METRICA 1
+                    # ricerca di num righe modificate consecutivamente prima all'invocazione dell'API
+                    #print("riga con API", rowmethod.Line)
+                    #print("righe modificate prima", righenear)
+                    listrighe = getlistrighe(righenear)
+                    print(listrighe)
+                    # consecutive righe
+                    for k, g in groupby(enumerate(listrighe), lambda ix: ix[0] - ix[1]):
+                        conse = list(map(itemgetter(1), g))
+                        if conse[-1] == rowmethod.Line or conse[-1] == rowmethod.Line-1:
+                            print(f"metrica 1 - {rowmethod.Line}: {len(conse)}")
+
+
+
+                    # METRICA 2
+                    # print("riga con API", rowmethod.Line)
+                    # print("righe modificate prima", righenear)
+                    # if rowmethod.riga == last di righenear
+
+                    # METRICA 3
+                    # per ciascun method o variabile (riferimento all'uso dell' API)
+                    for iter in rowmethod.Token_Method:
+                        foundriferimenti =[]
+                        if (iter[1] == "Variable" or iter[1] == "Method"):
+                            #print("ricerco ", iter)
+                            #print("in: ", righenear)
+                            foundriferimenti = [s for s in righenear if iter[0] in s[1]]
+                            # tutte le occorrenze di variabili o metodi presenti nelle righe precedenti alla chiamata
+                            # API presente in rowmethod
+                            #print("TROVATO",foundriferimenti)
+
+                        # TODO: salvare la lunghezza di questi trovati!!!!!!!!!!! foundriferimenti len()
+
+
+                # free methodclass e linefile
+                del methodfile
+                del linefile
+                methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Method", "Class"],
+                                           index=[])
+                linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Line"], index=[])
+
+
+
+                """
                 # Linee modificate del file
-                for lineadel in adel:
+                for index, lineadel in enumerate(adel):
                     # Setting Commenti in linee modificate
                     multicomments = False
 
@@ -118,16 +191,19 @@ def nearMining(newmetric, repo, total_commits, verbose):
                         lineadel = tuple(my_lineadel)
                         logger.info(f'No commento in ADD-DEL: {lineadel[1]}')  # no commento nelle linee modificate
                         #print("no commento lineadel ", lineadel)
-                    print("lineadel ", lineadel)
 
-                #linefile ["HashCommit", "Time", "Filename", "Line", "Token-Line"]
+                    # Caso limite?
+                    my_point_lineadel = list(lineadel)
+                    my_point_lineadel[1] = remove_chars(my_point_lineadel[1])
+                    lineadel = tuple(my_point_lineadel)
 
+                    print(f"TOKENIZZO {index}/{len(adel)}", lineadel[1])
+                    tokensLine = Parse.parseNormLine(lineadel[1])
+                    print("TOKENIZZATOOOO: ",tokensLine)
+                    #linefile.loc[len(linefile.index)] = [commithash[-5:], commitime, name, lineadel[0], tokensLine]
+                """
                 #print(methodfile)
-
-                # free methodclass
-                del methodfile
-                methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token-Method", "Class"],
-                                           index=[])
+                #print(linefile)
 
 
             """
