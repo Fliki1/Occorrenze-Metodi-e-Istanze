@@ -34,6 +34,21 @@ def get_range(dictionary, end):
 def getlistrighe(righenear):
     return [rig[0] for rig in righenear]
 
+def consecutive_line_mod(listrighe, rigaAPI):
+    """
+    Conteggio righe modificate consecutive prima della invocazione a libreria/metodo presente nel codice
+    :param listrighe: righe modificate prima della invocazione a metodo
+    :param rigaAPI: riga in cui è presente una chiamata API
+    :return: il più grande conteggio di righe modificate prima consecutive
+    """
+    esito = 0
+    for k, g in groupby(enumerate(listrighe), lambda ix: ix[0] - ix[1]):
+        conse = list(map(itemgetter(1), g))
+        if conse[-1] == rigaAPI or conse[-1] == rigaAPI - 1:
+            if len(conse) > esito:
+                esito = len(conse)
+    return esito
+
 
 def nearMining(newmetric, repo, total_commits, verbose):
     # Setting log
@@ -48,7 +63,6 @@ def nearMining(newmetric, repo, total_commits, verbose):
 
         # dataframe di supporto
         methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Method", "Class"], index=[])
-        linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Line"], index=[])
 
         # per ogni commit
         for file in commit.modified_files:
@@ -130,28 +144,32 @@ def nearMining(newmetric, repo, total_commits, verbose):
                     #print("riga con API", rowmethod.Line)
                     #print("righe modificate prima", righenear)
                     listrighe = getlistrighe(righenear)
-                    print(listrighe)
-                    # consecutive righe
-                    for k, g in groupby(enumerate(listrighe), lambda ix: ix[0] - ix[1]):
-                        conse = list(map(itemgetter(1), g))
-                        if conse[-1] == rowmethod.Line or conse[-1] == rowmethod.Line-1:
-                            print(f"metrica 1 - {rowmethod.Line}: {len(conse)}")
-
+                    # print(listrighe)
+                    # consecutive righe modificate rispetto alla riga di invocazione metodo
+                    esitoMone = consecutive_line_mod(listrighe, rowmethod.Line)
+                    # TODO: print("metrica 1:",esitoMone)
 
 
                     # METRICA 2
                     # print("riga con API", rowmethod.Line)
                     # print("righe modificate prima", righenear)
                     # if rowmethod.riga == last di righenear
+                    esitoMtwo = False
+                    if righenear:
+                        if rowmethod.Line == righenear[-1][0]:
+                            for tok in rowmethod.Token_Method:
+                                if tok[0] in righenear[-1][1]:
+                                    esitoMtwo = True
+                    # TODO: esitoMtwo
 
                     # METRICA 3
                     # per ciascun method o variabile (riferimento all'uso dell' API)
-                    for iter in rowmethod.Token_Method:
-                        foundriferimenti =[]
-                        if (iter[1] == "Variable" or iter[1] == "Method"):
-                            #print("ricerco ", iter)
+                    for tokenapi in rowmethod.Token_Method:
+                        foundriferimenti = []
+                        if (tokenapi[1] == "Variable" or tokenapi[1] == "Method"):
+                            #print("ricerco ", tokenapi)
                             #print("in: ", righenear)
-                            foundriferimenti = [s for s in righenear if iter[0] in s[1]]
+                            foundriferimenti = [s for s in righenear if tokenapi[0] in s[1]]
                             # tutte le occorrenze di variabili o metodi presenti nelle righe precedenti alla chiamata
                             # API presente in rowmethod
                             #print("TROVATO",foundriferimenti)
@@ -161,10 +179,8 @@ def nearMining(newmetric, repo, total_commits, verbose):
 
                 # free methodclass e linefile
                 del methodfile
-                del linefile
                 methodfile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Method", "Class"],
                                            index=[])
-                linefile = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Line", "Token_Line"], index=[])
 
 
 
