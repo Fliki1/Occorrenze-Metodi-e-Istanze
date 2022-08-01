@@ -7,7 +7,7 @@ def path(repo_name):
         os.mkdir("./results/" + repo_name)
 
 
-def printData(repo_name, dataset, variables, methods):
+def printData(repo_name, dataset, variables, methods, newmetric):
     path(repo_name)
     # Fare il set_index dei dataframe causa problemi con la successiva analisi e gioco dei dati...
     # evitare se bisogna utilizzare questi per un analisi o conteggio vedi: methods
@@ -31,7 +31,14 @@ def printData(repo_name, dataset, variables, methods):
     methods.to_excel("./results/" + repo_name + "/MethodsTable.xlsx")
     # print(methods_print[:20])
 
-    # Printing Methods
+    # Printing NewMetric
+    newmetric.set_index(["Filename", "Time"], inplace=True)
+    newmetric.sort_index(inplace=True)
+    newmetric.to_csv("./results/" + repo_name + "/NearLine.csv")
+    newmetric.to_excel("./results/" + repo_name + "/NearLine.xlsx")
+    # print(dataset[:20])
+
+    # Printing Methods-2
     method_count = methods.value_counts(
         ["MethodName", "Class"])  # Return a Series containing counts of unique rows in the DataFrame.
     # method_count.columns = ["MethodName", "Class", "Count"]       # Rinomina le colonne

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): glob
 dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
-newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "LineBeforeModify",
+newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "ConsecutiveModifyLine",
                                   "CorrelationModify", "APIModify"], index=[])
 
 
@@ -87,11 +87,11 @@ if __name__ == "__main__":
         total_commits = git.total_commits()
 
         # Core process
-        #Api.apiMining(dataset, variables, methods, repo, total_commits, verb)
+        Api.apiMining(dataset, variables, methods, repo, total_commits, verb)
         # New metric
         Near.nearMining(newmetric, repo, total_commits, verb)
         # Save results
-        # Print.printData(commit.project_name, dataset, variables, methods)
+        Print.printData(commit.project_name, dataset, variables, methods, newmetric)
 
         # Reset Dataframe
         del dataset

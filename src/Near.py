@@ -66,7 +66,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
 
         # per ogni commit
         for file in commit.modified_files:
-            print("===========================================================")
+            #print("===========================================================")
             # se è stato modificato un file .java
             if (file.change_type.name == "ADD" or file.change_type.name == "MODIFY" or file.change_type.name == "DELETE") \
                     and file.filename[-5:] == ".java":
@@ -74,7 +74,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                 # Info
                 name = file.filename
                 logger.info(f'FileName: {name}')  # name file
-                print(name)
+                #print(name)
                 change = file.change_type.name  # ADD - MODIFY ...
                 logger.info(f'Change: {change}')  # tipo di modifica
                 commithash = commit.hash
@@ -173,6 +173,8 @@ def nearMining(newmetric, repo, total_commits, verbose):
                             # tutte le occorrenze di variabili o metodi presenti nelle righe precedenti alla chiamata
                             # API presente in rowmethod
                             #print("TROVATO",foundriferimenti)
+                        newmetric.loc[len(newmetric.index)] = [commithash[-5:], commitime, name, tokens, classx, \
+                                                              esitoMone, esitoMtwo, len(foundriferimenti)]
 
                         # TODO: salvare la lunghezza di questi trovati!!!!!!!!!!! foundriferimenti len()
 
