@@ -49,7 +49,7 @@ def consecutive_line_mod(listrighe, rigaAPI):
                 esito = len(conse)
     return esito
 
-
+# test
 def nearMining(newmetric, repo, total_commits, verbose):
     # Setting log
     log(verbose)
