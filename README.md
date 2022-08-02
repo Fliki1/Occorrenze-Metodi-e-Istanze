@@ -169,5 +169,3 @@ E poi installare i requirements:
 ````commandline
 pip install -r requirements.txt
 ````
-2. Espandere la metrica: modifiche a linee di codice vicine forse da
-considerare come linkate alla chiamata API poco dopo successiva
