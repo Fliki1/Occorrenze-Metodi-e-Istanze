@@ -25,7 +25,7 @@ dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code"
 variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
 methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
 newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "ConsecutiveModifyLine",
-                                  "CorrelationModify", "APIModify"], index=[])
+                                   "APIModify", "CorrelationModify"], index=[])
 
 
 def remove_duplicates(urls):
@@ -104,6 +104,6 @@ if __name__ == "__main__":
         variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
         methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
         newmetric = pd.DataFrame(columns=["HashCommit", "Time", "Filename", "Method", "Class", "LineBeforeModify",
-                                          "CorrelationModify", "APIModify"], index=[])
+                                          "APIModify", "CorrelationModify"], index=[])
 
     logger.info('Fine del Hard Java API')

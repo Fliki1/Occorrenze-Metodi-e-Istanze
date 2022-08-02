@@ -12,6 +12,7 @@ modificati in ciascun commit del repository.
 Per ogni riga del codice modificato si studiano:
 * numero di modifiche relative all'istanziazione di un oggetto
 * numero di modifiche a chiamate di metodi di classi o librerie
+* numero di righe di codice modificate prossimi e possibilmente correlati a una chiamata API
 
 ### Requires
 * Python 3.8
@@ -57,11 +58,15 @@ dataset di supporto (dataset/variables/methods)
 * [Parse](./src/Parse.py) permette di suddividere in tokens ogni riga del codice modificato
 per le successive analisi e ricerca di keywords opportune tramite l'uso
 di espressioni regolari regex.
-* [Api](./src/Api.py) cuore dello script
+* [Api](./src/Api.py) core della metrica per rilevare le chiamate API e istanziazione di oggetti
 * [Class](./src/Class.py) filtra le classi presenti nel repository corrente
 * [Print](./src/Print.py) salva i DataFrame ottenuti in [results](./results)
 * [ProgressionBar](./src/ProgressionBar.py) print status progression sul terminale
 * [Analisicommit](Analisicommit.py) Script di partenza e ispirazione
+* [Near](Near.py) permette di determinare la presenza di righe modificate
+precedentemente le chiamate API per capire se queste siano correlate alle
+chiamate in questione
+
 
 ## Esiti
 Esempio caso di: [java-LSH](https://github.com/tdebatty/java-LSH)
@@ -109,7 +114,7 @@ dei metodi, e la rispettiva riga e classe nei quali sono state invocate
 | ...              | ...         | ...         | ...                                                                                   | ...                                                                                                                                                                                                                                                                                                              | ...	    |
 
 
-#### Final
+#### Final Methods
 DataFrame table che tiene traccia dei metodi presenti nel 
 progetto, la classe di appartenenza, quante volte sono state invocate
 e quali classi ne invocano l'utilizzo
@@ -128,6 +133,29 @@ Possibili chiamate e istanze non conteggiate sono riportate nei file di log.
 Questo accade quando non si trovano le dichiarazioni di queste istanze, vedi 
 passati come parametri o casting, o invocazione di metodi di librerie importate
 (System.out.print(...))
+
+#### Near
+DataFrame table che tiene traccia di possibili link tra le chiamate API presenti
+in un repository con le precedenti istruzioni eseguite dettate da una finestra
+settabile. La metrica cerca di rilevare come la difficoltà dell'uso di chiamate
+API siano relative anche a istruzioni precedenti, a parametri richiesti dalla 
+chiamata e a modifiche di queste per determinare l'esito voluto. Per sperimentare
+questa metrica si è deciso di suddividerla in tre asset diversi al fine di fornire
+tre livelli di granualità dettate dalle loro distinte combinazioni.
+* **ConsecutiveModifyLine**: righe modificate consecutivamente prima della chiamata API
+* **APIModify**: modifica della chiamata API direttamente
+* **CorrelationModify**: presenza di riferimenti alla chiamata API nelle righe modificate poco prima 
+La tabella riporta:
+
+| Filename         | Time       | HashCommit | Method                                                                                                                                                                                                                                                                                                                                | Class       | ConsecutiveModifyLine | APIModify | CorrelationModify |
+|------------------|------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|-----------------------|-----------|-------------------|
+| InitialSeed.java | 10/08/2016 | 8,8E+034   | [('vector', 'Variable'), ('[', 'Separator'), ('i', 'Variable'), (']', 'Separator'), ('=', 'Operator'), ('r', 'Variable'), ('.', 'Separator'), ('nextBoolean', 'Method'), ('(', 'Separator'), (')', 'Separator'), (';', 'Separator')]                                                                                                  | InitialSeed | 5	                    | True      | 9                 |                                                                                                                                              |
+| KShingling.java  | 28/01/2015 | c464c      | [('System', 'Class'), ('.', 'Separator'), ('out', 'Variable'), ('.', 'Separator'), ('println', 'Method'), ('(', 'Separator'), ('ks', 'Variable'), ('.', 'Separator'), ('toString', 'Method'), ('(', 'Separator'), (')', 'Separator'), (')', 'Separator'), (';', 'Separator')]                                                         | KShingling  | 5	                    | True      | 3                 |                                                                                                                                              |
+| LSH.java         | 07/08/2015 | 03ac7      | [('int', 'BasicType'), ('stage', 'Variable'), ('=', 'Operator'), ('Math', 'Class'), ('.', 'Separator'), ('min', 'Method'), ('(', 'Separator'), ('i', 'Variable'), ('/', 'Operator'), ('rows', 'Variable'), (',', 'Separator'), ('s', 'Variable'), ('-', 'Operator'), ('1', 'DecimalInteger'), (')', 'Separator'), (';', 'Separator')] | LSH         | 0	                    | False     | 4                 |                                                                                                                                              |
+| ...              | ...        | ...        | ...                                                                                                                                                                                                                                                                                                                                   | ...         | ...                   | ...       | ...               |                                                                                                                                              |
+
+Possono capitare falsi positivi su **ConsecutiveModifyLine** grandi quanto la finestra di righe stabilita sui primissimi
+commit. Vengono interpretati come tutte modifiche nuove proprio perché il file compare per la prima volta nel git.
 
 #### TODO:
 

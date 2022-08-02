@@ -132,7 +132,6 @@ def nearMining(newmetric, repo, total_commits, verbose):
                     # Set esito new Metrica
                     esitoMone = 0
                     esitoMtwo = False
-                    esitoMthree = 0
 
                     # estrapoliamo le sole modifiche prima dell'invozaione del metodo
                     righenear = get_range(adel, rowmethod.Line)
@@ -150,7 +149,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                         # print(listrighe)
                         # consecutive righe modificate rispetto alla riga di invocazione metodo
                         esitoMone = consecutive_line_mod(listrighe, rowmethod.Line)
-                        print("esito 1 ", esitoMone)
+                        #print("esito 1 ", esitoMone)
 
 
                         # METRICA 2: modifica stessa chiamata API
@@ -161,7 +160,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                                 for tok in rowmethod.Token_Method:
                                     if tok[0] in righenear[-1][1]:
                                         esitoMtwo = True
-                        print("esito 2 ", esitoMtwo)
+                        #print("esito 2 ", esitoMtwo)
 
                     # METRICA 3
                     foundriferimenti = 0
