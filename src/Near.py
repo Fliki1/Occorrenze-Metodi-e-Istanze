@@ -128,6 +128,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                 # ==============================================================================================
                 # per ciascuna chiamata API
                 for rowmethod in methodfile.itertuples(index=True, name='Pandas'):
+                    print(rowmethod.Token_Method)
                     # Set esito new Metrica
                     esitoMone = 0
                     esitoMtwo = False
@@ -144,14 +145,15 @@ def nearMining(newmetric, repo, total_commits, verbose):
                         # METRICA 1
                         # ricerca di num righe modificate consecutivamente prima all'invocazione dell'API
                         #print("riga con API", rowmethod.Line)
-                        #print("righe modificate prima", righenear)
+                        print("righe modificate prima", righenear)
                         listrighe = getlistrighe(righenear)
                         # print(listrighe)
                         # consecutive righe modificate rispetto alla riga di invocazione metodo
                         esitoMone = consecutive_line_mod(listrighe, rowmethod.Line)
+                        print("esito 1 ", esitoMone)
 
 
-                        # METRICA 2
+                        # METRICA 2: modifica stessa chiamata API
                         # print("riga con API", rowmethod.Line)
                         # print("righe modificate prima", righenear)
                         if righenear:
@@ -159,21 +161,24 @@ def nearMining(newmetric, repo, total_commits, verbose):
                                 for tok in rowmethod.Token_Method:
                                     if tok[0] in righenear[-1][1]:
                                         esitoMtwo = True
+                        print("esito 2 ", esitoMtwo)
 
                     # METRICA 3
+                    foundriferimenti = 0
                     # per ciascun method o variabile (riferimento all'uso dell' API)
                     for tokenapi in rowmethod.Token_Method:
 
                         if (tokenapi[1] == "Variable" or tokenapi[1] == "Method"):
                             #print("ricerco ", tokenapi)
                             #print("in: ", righenear)
-                            foundriferimenti = len([s for s in righenear if tokenapi[0] in s[1]])
-                            if esitoMthree < foundriferimenti:
-                                esitoMthree = foundriferimenti
+                            foundriferimenti += len([s for s in righenear if tokenapi[0] in s[1]])
+                            #if esitoMthree < foundriferimenti:
+                    esitoMthree = foundriferimenti
                             # tutte le occorrenze di variabili o metodi presenti nelle righe precedenti alla chiamata
                             # API presente in rowmethod
                             #print("TROVATO",foundriferimenti)
-                    newmetric.loc[len(newmetric.index)] = [commithash[-5:], commitime, name, rowmethod.Token_Method, classx, esitoMone, esitoMtwo, esitoMthree]
+                    newmetric.loc[len(newmetric.index)] = [commithash[-5:], commitime, name, rowmethod.Token_Method,
+                                                           classx, esitoMone, esitoMtwo, esitoMthree]
 
 
                 # free methodclass
