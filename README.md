@@ -145,6 +145,7 @@ tre livelli di granualità dettate dalle loro distinte combinazioni.
 * **ConsecutiveModifyLine**: righe modificate consecutivamente prima della chiamata API
 * **APIModify**: modifica della chiamata API direttamente
 * **CorrelationModify**: presenza di riferimenti alla chiamata API nelle righe modificate poco prima 
+
 La tabella riporta:
 
 | Filename         | Time       | HashCommit | Method                                                                                                                                                                                                                                                                                                                                | Class       | ConsecutiveModifyLine | APIModify | CorrelationModify |
