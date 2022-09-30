@@ -46,26 +46,26 @@ def addVariables(table, tokens, filename, verbose):
             logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[j - 1][0]]}')
             #print([filename, tokens[i][0], tokens[j - 1][0]])
             table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
-        elif tokens[i][1] == "Variable" and tokens[i-1][1] == "Separator" and tokens[i-2][0] == "this" \
-                and (tokens[i + 3][1] == "Class" or tokens[i + 3][1] == "Function"):
-            # case: this.mb = new Class()
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 3][0]]
-            logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[i + 3][0]]}')
-            #print([filename, tokens[i][0], tokens[i + 3][0]])
-            table.drop_duplicates(inplace=True)     # evitiamo di tenere in memoria copie della stessa instanza
-        elif tokens[i][1] == "Variable" and tokens[i-1][1] == "Separator" and tokens[i-2][0] == "this" \
-                and (tokens[i + 6][1] == "Class" or tokens[i + 6][1] == "Function"):
-            # case this.mb[i] = new Class()
-            table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 6][0]]
-            logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[i + 6][0]]}')
-            #print([filename, tokens[i][0], tokens[i + 6][0]])
-            table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
         elif tokens[i][1] == "Variable" and i == 0 and tokens[i+2][0] == "new":
             # case: filereader = new FileReader()
             table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 3][0]]
             logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[i + 3][0]]}')
             #print([filename, tokens[i][0], tokens[i + 3][0]])
             table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
+        elif tokens[i][1] == "Variable" and tokens[i - 1][1] == "Separator" and tokens[i - 2][0] == "this":
+            # case: this.mb
+            if i + 3 < len(tokens) and (tokens[i + 3][1] == "Class" or tokens[i + 3][1] == "Function"):
+                # case: this.mb = new Class()
+                table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 3][0]]
+                logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[i + 3][0]]}')
+                # print([filename, tokens[i][0], tokens[i + 3][0]])
+                table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
+            elif i + 6 < len(tokens) and (tokens[i + 6][1] == "Class" or tokens[i + 6][1] == "Function"):
+                # case this.mb[i] = new Class()
+                table.loc[len(table.index)] = [filename, tokens[i][0], tokens[i + 6][0]]
+                logger.info(f'addVariabile:, {[filename, tokens[i][0], tokens[i + 6][0]]}')
+                # print([filename, tokens[i][0], tokens[i + 6][0]])
+                table.drop_duplicates(inplace=True)  # evitiamo di tenere in memoria copie della stessa instanza
     return table
 
 
