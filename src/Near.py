@@ -128,7 +128,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                 # ==============================================================================================
                 # per ciascuna chiamata API
                 for rowmethod in methodfile.itertuples(index=True, name='Pandas'):
-                    print(rowmethod.Token_Method)
+                    #print(rowmethod.Token_Method)
                     # Set esito new Metrica
                     esitoMone = 0
                     esitoMtwo = False
@@ -144,7 +144,7 @@ def nearMining(newmetric, repo, total_commits, verbose):
                         # METRICA 1
                         # ricerca di num righe modificate consecutivamente prima all'invocazione dell'API
                         #print("riga con API", rowmethod.Line)
-                        print("righe modificate prima", righenear)
+                        #print("righe modificate prima", righenear)
                         listrighe = getlistrighe(righenear)
                         # print(listrighe)
                         # consecutive righe modificate rispetto alla riga di invocazione metodo
