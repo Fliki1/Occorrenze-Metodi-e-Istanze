@@ -27,11 +27,11 @@ def parseIdentifier(lineList):
     """
     auxList = lineList.copy()
     for i in range(len(auxList)):
-        if auxList[i][1] == 'Identifier' and i+1 < len(auxList):
+        if auxList[i][1] == 'Identifier':
             # Euristiche per determinare il ruolo del tipo sintattico analizzato
-            if auxList[i+1][0] == '(' and auxList[i-1][0] == '.':
+            if i+1 < len(auxList) and (auxList[i+1][0] == '(' and auxList[i-1][0] == '.'):
                 lineList[i] = (lineList[i][0], 'Method')
-            elif auxList[i+1][0] == '(':
+            elif i+1 < len(auxList) and auxList[i+1][0] == '(':
                 lineList[i] = (lineList[i][0], 'Function')
             elif auxList[i][0][0].isupper():
                 lineList[i] = (lineList[i][0], 'Class')
