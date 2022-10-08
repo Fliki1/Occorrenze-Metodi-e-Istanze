@@ -2,8 +2,8 @@
 
 ## Details
 L'obiettivo del progetto è uno script Python che analizzi
-il codice di un repository al fine di quantificare la correlazione 
-fra le modifiche sul codice e le API da esso usate.
+il codice di un repository al fine di quantificare l'effort sull'uso delle API 
+in base alle modifiche fatte sul codice in corrispondenza di queste.
 
 ## Process
 Dato un URL di un progetto GitHub Java, si analizzano i file .java
