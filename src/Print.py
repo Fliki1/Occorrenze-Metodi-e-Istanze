@@ -35,7 +35,9 @@ def printData(repo_name, dataset, variables, methods, newmetric):
     newmetric.set_index(["Filename", "Time"], inplace=True)
     newmetric.sort_index(inplace=True)
     newmetric.to_csv("./results/" + repo_name + "/NearLine.csv")
-    newmetric.to_excel("./results/" + repo_name + "/NearLine.xlsx")
+    # print in Excel: to handle
+    # ValueError: This sheet is too large! Your sheet size is: xx, 6 Max sheet size is: 1048576
+    # newmetric.to_excel("./results/" + repo_name + "/NearLine.xlsx")
     # print(dataset[:20])
 
     # Printing Methods-2
@@ -60,7 +62,7 @@ def printData(repo_name, dataset, variables, methods, newmetric):
     method_count.reset_index(inplace=True)
     # Save
     method_count.to_csv("./results/" + repo_name + "/FinalMethodTable.csv", index=False)
-    method_count.to_excel("./results/" + repo_name + "/FinalMethodTable.xlsx", index=False)
+    # method_count.to_excel("./results/" + repo_name + "/FinalMethodTable.xlsx", index=False)
 
     del dataset
     del variables
