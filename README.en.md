@@ -1,4 +1,4 @@
-![README.md](https://img.shields.io/badge/lang-it-blue)
+![.README.md](https://img.shields.io/badge/lang-it-blue)
 # Metrica sull'utilizzo delle API
 
 ## Details
