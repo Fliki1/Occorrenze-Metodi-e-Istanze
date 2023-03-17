@@ -1,5 +1,5 @@
-![.README.md](https://img.shields.io/badge/lang-it-blue)
 # Metrica sull'utilizzo delle API
+[![it](https://img.shields.io/badge/lang-it-blue)](README.md)
 
 ## Details
 L'obiettivo del progetto è uno script Python che analizzi
