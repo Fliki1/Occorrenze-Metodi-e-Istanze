@@ -6,9 +6,6 @@ import gc
 
 from src import Print, Api, Near
 
-# https://github.com/tdebatty/java-LSH
-# https://github.com/niharika2k00/Java
-
 # TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
 
 # create logger
