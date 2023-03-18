@@ -47,7 +47,7 @@ Enter Gits Repositories: https://github.com/tdebatty/java-LSH, https://github.co
 ## Structure
 The _src_ folder includes:
 * [Comment](./src/Comment.py) detect the presence of comments in modified .java files. 
-These will be properly filtered, removing only the parts of no interest
+They will be properly filtered, removing only the parts of no interest
 * [ManageDataset](./src/ManageDataset.py) contains methods for managing and updating
 support datasets (dataset/variables/methods)
 * [Parse](./src/Parse.py) splits each line of modified code into tokens
@@ -56,16 +56,17 @@ for subsequent analysis and research of appropriate keywords through regex regul
 * [Class](./src/Class.py) filters the classes present in the current repository
 * [Print](./src/Print.py) save the obtained DataFrames in [results](./results)
 * [ProgressionBar](./src/ProgressionBar.py) print status progression on prompt
-* [Analisicommit](Analisicommit.py) Starting demo script
-* [Near](Near.py) determine the presence of modified rows
-previously the API calls to understand possible correlations
+* [Analisicommit](Analisicommit.py) demo
+* [Near](Near.py) determine possible correlations between the API calls and its 
+previus modified rows
 
 
-## Esiti
-Esempio caso di: [java-LSH](https://github.com/tdebatty/java-LSH)
+
+## Results
+Use case: [java-LSH](https://github.com/tdebatty/java-LSH)
 #### Variables
-DataFrame table che tiene traccia di quali istanze sono presenti nel 
-progetto e del tipo a essi associati
+DataFrame table that keeps track of which instances are 
+present in the project and the type associated
 
 | Filename         | Varname        | Vartype        |
 |------------------|----------------|----------------|
@@ -82,8 +83,9 @@ progetto e del tipo a essi associati
 | ...              | ...            | ...            |
 
 #### Methods
-DataFrame table che tiene traccia dei metodi invocati, la classe di appartenenza
-dei metodi, e la rispettiva riga e classe nei quali sono state invocate
+DataFrame table that keeps track of the invoked methods, 
+the class to which the methods belong, 
+and the respective row and class in which they have been invoked
 
 | Filename         | MethodName  | Class      | CallingClass | Line number |
 |------------------|-------------|------------|--------------|-------------|
@@ -108,9 +110,9 @@ dei metodi, e la rispettiva riga e classe nei quali sono state invocate
 
 
 #### Final Methods
-DataFrame table che tiene traccia dei metodi presenti nel 
-progetto, la classe di appartenenza, quante volte sono state invocate
-e quali classi ne invocano l'utilizzo
+DataFrame table that keeps track of the methods present in the project, 
+the class to which they belong, 
+how many times they have been invoked and which classes invoke their use
 
 | MethodName | Class    | Count | CallingClasses                                                                                                                                        |
 |------------|----------|-------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -122,24 +124,27 @@ e quali classi ne invocano l'utilizzo
 | similarity | SuperBit | 9     | ['MinHash', 'SuperBit', 'MinHashExample', 'SuperBitExample', 'SuperBitSparseExample']                                                                 |
 | ...        | ...      | ...   | [...]                                                                                                                                                 |
 
-Possibili chiamate e istanze non conteggiate sono riportate nei file di log.
-Questo accade quando non si trovano le dichiarazioni di queste istanze, vedi 
-passati come parametri o casting, o invocazione di metodi di librerie importate
-(System.out.print(...))
+Possible calls and instances not counted are reported in the log files. 
+This happens when the declarations of these instances are not found (see methods' parameters or casting) 
+or invocation of methods from imported libraries (ex. System.out.print(…))
 
 #### Near
-DataFrame table che tiene traccia di possibili link tra le chiamate API presenti
-in un repository con le precedenti istruzioni eseguite dettate da una finestra
-settabile. La metrica cerca di rilevare come la difficoltà dell'uso di chiamate
-API siano relative anche a istruzioni precedenti, a parametri richiesti dalla 
-chiamata e a modifiche di queste per determinare l'esito voluto. Per sperimentare
-questa metrica si è deciso di suddividerla in tre asset diversi al fine di fornire
-tre livelli di granualità dettate dalle loro distinte combinazioni.
-* **ConsecutiveModifyLine**: righe modificate consecutivamente prima della chiamata API
+The metric tries to detect how the difficulty of using API calls is also related to previous instructions. 
+Any changes on parameters required by API call.
+To experiment this metric was decided to divide it into three different assets in order to provide
+three levels of grain dictated by their distinct combinations.
+Based on the presence of these it is possible to weigh
+differently the result of the metric and therefore the amount of effort which was
+required for its appropriate use.
+
+* **ConsecutiveModifyLine**: represents the lines consecutively changed before
+the API call. If the lines just before an API invocation were changed,
+it could be a change that will affect to the next API call. Once set the
+size of the sliding window row (five by default) what is calculated is the
+consecutive count lines modified before each invocation of API method
+present in the code.
 * **APIModify**: modifica della chiamata API direttamente
 * **CorrelationModify**: presenza di riferimenti alla chiamata API nelle righe modificate poco prima 
-
-La tabella riporta:
 
 | Filename         | Time       | HashCommit | Method                                                                                                                                                                                                                                                                                                                                | Class       | ConsecutiveModifyLine | APIModify | CorrelationModify |
 |------------------|------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|-----------------------|-----------|-------------------|
@@ -147,6 +152,3 @@ La tabella riporta:
 | KShingling.java  | 28/01/2015 | c464c      | [('System', 'Class'), ('.', 'Separator'), ('out', 'Variable'), ('.', 'Separator'), ('println', 'Method'), ('(', 'Separator'), ('ks', 'Variable'), ('.', 'Separator'), ('toString', 'Method'), ('(', 'Separator'), (')', 'Separator'), (')', 'Separator'), (';', 'Separator')]                                                         | KShingling  | 5	                    | True      | 3                 |                                                                                                                                              |
 | LSH.java         | 07/08/2015 | 03ac7      | [('int', 'BasicType'), ('stage', 'Variable'), ('=', 'Operator'), ('Math', 'Class'), ('.', 'Separator'), ('min', 'Method'), ('(', 'Separator'), ('i', 'Variable'), ('/', 'Operator'), ('rows', 'Variable'), (',', 'Separator'), ('s', 'Variable'), ('-', 'Operator'), ('1', 'DecimalInteger'), (')', 'Separator'), (';', 'Separator')] | LSH         | 0	                    | False     | 4                 |                                                                                                                                              |
 | ...              | ...        | ...        | ...                                                                                                                                                                                                                                                                                                                                   | ...         | ...                   | ...       | ...               |                                                                                                                                              |
-
-Possono capitare falsi positivi su **ConsecutiveModifyLine** grandi quanto la finestra di righe stabilita sui primissimi
-commit. Vengono interpretati come tutte modifiche nuove proprio perché il file compare per la prima volta nel git.
