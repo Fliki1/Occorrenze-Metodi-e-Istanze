@@ -3,7 +3,9 @@ import re
 # Espressioni regolari per selezionare le righe di codice contenenti instanziazioni di oggetti o chiamate di metodi
 
 reMethodCall = re.compile('\s*\S+\s*\.\s*\S+\s*\(.*\).*;\s*')   # chiamate a metodo
-reInstAss = re.compile('\s*\S+\s*=\s*new\s*\S+\(.*\)\s*;\s*')   # new istanza
+#reInstAss = re.compile('\s*\S+\s*=\s*new\s*\S+\(.*\)\s*;\s*')   # new istanza
+reInstAss = re.compile('^(\s*\S+\s*=\s*)?new\s*\S+\(.*\)\s*;\s*')   # new istanza anche senza (= new) ma solo new
+
 
 # Espressioni regolari per i commenti
 
