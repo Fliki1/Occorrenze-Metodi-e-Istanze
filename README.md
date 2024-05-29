@@ -48,6 +48,13 @@ Start script
 python main.py [-v]
 Enter Gits Repositories: https://github.com/tdebatty/java-LSH, https://github.com/...
 ````
+Extra results:
+````commandline
+python main_mod.py [-v]
+Enter Gits Repositories: https://github.com/tdebatty/java-LSH, https://github.com/...
+python extract_csv_data.py </results/project/folder/csv>
+````
+Genera output.csv 
 
 ## Structure
 Nella cartella _src_ sono presenti le componenti:
