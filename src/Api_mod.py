@@ -45,7 +45,7 @@ def apiMining(variables, methods, repo, total_commits, verbose):
                 # nome del file == classe?
                 name = file.filename
                 logger.info(f'FileName: {name}')  # name file
-                change = file.change_type.name  # ADD - MODIFY ...
+                change = file.change_type.name  # ADD - MODIFY - DELETE - RENAME
                 logger.info(f'Change: {change}')  # tipo di modifica
                 
                 #print(name, change)
@@ -59,16 +59,12 @@ def apiMining(variables, methods, repo, total_commits, verbose):
                 
                 # Se è un nuovo file modificato, crea un suo DataFrame
                 if name not in df_dict:
-                    # df_dict[name] = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens"], dtype=object)
                     df_dict[name] = pd.DataFrame(columns=["Filename", "Methods", "Change type", "Line number", "Code", "Tokens"], dtype=object)
                 df = df_dict[name]
 
                 # analisi fatta sul diff DELETE 
                 if file.change_type.name == "DELETE":
-                    #diff = file.diff_parsed
                     deleted_code = '\n'.join(line[1] for line in file.diff_parsed['deleted'])
-
-                    #deleted_code = [line[1] + '\n' for line in file.diff_parsed['deleted']]
                     full_code = deleted_code
                 else:
                     # o sull'intero codice sorgente dopo la modifica
@@ -78,29 +74,11 @@ def apiMining(variables, methods, repo, total_commits, verbose):
                 if full_code is None:
                     continue
 
-                # ogni riga aggiunta o cancellata nel file {'added': [(1, ''), (2, '// import java.util.*;'), (3,... 'delete': ...}
-                #diff = file.diff_parsed
-                #added = diff["added"]
-                #if name == "LSHSuperBit.java": print(added)
-                #deleted = diff["deleted"]
-                #lines = added + deleted  # [(1, ''), (2, '// import java.util.*;'), (3,... puro codice solo modificato nel commit
-                #cutOffPoint = len(added)
-                # print("==================")
-
-                # print(file.source_code)   # file.source_code = source code of the file (can be _None_ if the file is deleted or only renamed)
-                # print(file.source_code_before)   # file.source_code_before = source code of the file before the change (can be _None_ if the file is added or only renamed)
-
-                # lista (riga, classe) del codice corrente
-                # classesInAdded = Class.lookForClasses(file.source_code)
-                # lista (riga, classe) del codice come era prima
-                #classesInDeleted = Class.lookForClasses(file.source_code_before)
                 # status MultipleComment
                 multicomments = False
 
                 full_code = full_code.split('\n')
-                for ind, row in enumerate(full_code):
-                    # print(element[0], element[1])
-                    
+                for ind, row in enumerate(full_code):                    
                     # ricerca nella linea la presenza di commento o pluri-commento: and skip it
                     if Comment.isStartMultipleComment(row):  # è l'inizio di un commento multiplo?
                         multicomments = True
@@ -124,7 +102,6 @@ def apiMining(variables, methods, repo, total_commits, verbose):
                         
                         # uso la str dei token utile per un confronto diretto se presente in pandas
                         tokens_str = str(tokens)
-                        #if name == "LSHSuperBit.java": print("verifico", row)
 
                         # ricerca per tokens
                         if tokens_str in df['Tokens'].values:
@@ -142,8 +119,6 @@ def apiMining(variables, methods, repo, total_commits, verbose):
                                 if "SHIFT" not in df.at[index, "Change type"]:
                                     df.at[index, "Change type"].append("SHIFT")
                         
-                        #existing_row = df[(df['Tokens'] == tokens_str) & (df['Change type'] == change)]
-                        #existing_row = df[(df['Tokens'] == tokens_str)]
                         else:
                             methods = [token for token, token_type in tokens if token_type == 'Method']
                             if methods:

@@ -4,7 +4,7 @@ import argparse
 import logging
 import gc, os
 
-from src import Print, Api_copy, Near
+from src import Api_mod
 
 # TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         total_commits = git.total_commits()
 
         # Core process
-        dataset = Api_copy.apiMining(variables, methods, repo, total_commits, verb)
+        dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
         # New metric
         # Near.nearMining(newmetric, repo, total_commits, verb)
 
