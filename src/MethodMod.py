@@ -1,28 +1,10 @@
 from pydriller import Repository
-import logging
 import pandas as pd
-#import warnings
 import numpy as np
 import javalang
 
 from src import Parse, Comment, ProgressionBar
 
-logger = logging.getLogger(__name__)  # nome del modulo corrente (MethodMod.py)
-
-# warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-
-dict_method = {}
-"""
-{
-    'file1.py': ['metodo1', 'metodo2', 'metodo3'],
-    'file2.py': ['metodoA', 'metodoB'],
-    'file3.py': ['metodoX', 'metodoY', 'metodoZ'],
-    ...
-}
-"""
-
-# Dizionario per memorizzare lista metodi dei singoli file.java
-dict_mod = {}
 
 # Dizionario per memorizzare tutte le istanze presenti nel progetto
 dict_ist = {}
@@ -38,7 +20,6 @@ dict_ist = {
     }
 }
 """
-
 """ ricerca di tutte le istanze presenti all'interno di tutte le classi (file.java) """
 def istanceMining(repo, total_commits):
     for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
@@ -58,9 +39,20 @@ def istanceMining(repo, total_commits):
                 tree = javalang.parse.parse(full_code)
                 for path, node in tree:
                     if isinstance(node, javalang.tree.VariableDeclarator) and isinstance(node.initializer, javalang.tree.ClassCreator):
-                        if name in dict_ist and node.name in dict_ist[name]:
+                        if node.name not in dict_ist[name]:
                             dict_ist[name][node.name] = node.initializer.type.name
+    #print(dict_ist)
 
+
+dict_method = {}
+"""
+{
+    'file1.py': ['metodo1', 'metodo2', 'metodo3'],
+    'file2.py': ['metodoA', 'metodoB'],
+    'file3.py': ['metodoX', 'metodoY', 'metodoZ'],
+    ...
+}
+"""
 
 """ ricerca di tutti i metodi presenti all'interno di una classe """
 def methodMining(repo, total_commits):
@@ -81,18 +73,12 @@ def methodMining(repo, total_commits):
 
     #methodScanning(repo=repo, total_commits=total_commits)
 
-def analyze_java_code(java_code):
-    tree = javalang.parse.parse(java_code)
-
-    for path, node in tree:
-        if isinstance(node, javalang.tree.MethodInvocation):
-            #print(f"Method call: {node.member}, Arguments: {node.arguments}")
-            if node.qualifier:
-                return node.member, node.qualifier
-
 """
 ricerca ESTERNA
 """
+# Dizionario per memorizzare lista modifiche dei singoli file.java
+dict_mod = {}
+
 def methodScanning(repo, total_commits):
     # dati le classi del progetto (nomi file.java)
     for classe in dict_method:
@@ -116,32 +102,18 @@ def methodScanning(repo, total_commits):
                     # can be _None_ if the file is deleted or only renamed
                     if full_code is None:
                         continue
-
-                    # status MultipleComment
-                    multicomments = False
                     
                     # studio dell'intero codice
                     tree = javalang.parse.parse(full_code)
+                    code_in_lines = full_code.split('\n')
                     for path, node in tree:
+                        # modifica di una invocazione
                         if isinstance(node, javalang.tree.MethodInvocation):
                             if node.qualifier:
-                                print(node.member, node.qualifier)
-                        
-                    """
-                    for ind, row in enumerate(full_code):                    
-                        # ricerca nella linea la presenza di commento o pluri-commento: and skip it
-                        if Comment.isStartMultipleComment(row):
-                            multicomments = True
-                        if Comment.isEndMultipleComment(row):  
-                            multicomments = False
-                        if multicomments:   # skip fino a quando non si arriva alla fine di un commento multiplo
-                            continue
-                        if Comment.isSingleComment(row):
-                            continue
-                    """
-
-
-    
+                                line_number = node.position[0]  # La posizione è una tupla (linea, colonna)
+                                line = code_in_lines[line_number - 1]  # -1 perché gli indici delle liste iniziano da 0
+                                print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
+                                
                 
 def methodScanningBrutto(repo, total_commits, ciao):
     # Core methods

@@ -88,6 +88,10 @@ if __name__ == "__main__":
 
         # Core process
         # dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
+        
+        MethodMod.istanceMining(repo, total_commits)
+        MethodMod.methodMining(repo, total_commits)
+        MethodMod.methodScanning(repo, total_commits)
 
         # Save results
         for filename, df in dataset.items():
@@ -98,11 +102,7 @@ if __name__ == "__main__":
             #df.set_index(["Filename", "Line number"], inplace=True)
             #df.sort_index(inplace=True)
             df.to_csv("./results/" + commit.project_name + "/"+ filename[:-4]+"csv", index=False)
-
-        MethodMod.istanceMining(repo, total_commits)
-        MethodMod.methodMining(repo, total_commits)
         
-
 
         # Reset Dataframe
         del dataset
