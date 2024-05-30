@@ -4,7 +4,7 @@ import argparse
 import logging
 import gc, os
 
-from src import Api_mod
+from src import Api_mod, MethodMod
 
 # TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
 
@@ -87,9 +87,7 @@ if __name__ == "__main__":
         total_commits = git.total_commits()
 
         # Core process
-        dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
-        # New metric
-        # Near.nearMining(newmetric, repo, total_commits, verb)
+        # dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
 
         # Save results
         for filename, df in dataset.items():
@@ -100,6 +98,10 @@ if __name__ == "__main__":
             #df.set_index(["Filename", "Line number"], inplace=True)
             #df.sort_index(inplace=True)
             df.to_csv("./results/" + commit.project_name + "/"+ filename[:-4]+"csv", index=False)
+
+        MethodMod.istanceMining(repo, total_commits)
+        MethodMod.methodMining(repo, total_commits)
+        
 
 
         # Reset Dataframe
