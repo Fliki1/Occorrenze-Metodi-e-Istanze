@@ -4,19 +4,10 @@ import argparse
 import logging
 import gc, os
 
-from src import MethodOut2
-from src import Api_mod
+from src import MethodAll1
 
 # create logger
 logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): global logger
-
-"""
-    DataFrame di supporto per la gestione e analisi dei dati:
-        dataset = tutte le linee di codice
-        variables = associa ogni istanza alle sue classi di appartenenza
-        methods = associa ogni metodo alla sua classe (in relazione all'istanza di appartenenza)
-        newmetric = ricerca correlazione modifiche vicine a invocazione di librerie
-"""
 
 
 def remove_duplicates(urls):
@@ -31,21 +22,6 @@ def get_git_urls():
     urls = url_input.split(", ")
     urls_not_duplicate = remove_duplicates(urls)  # remove duplicate urls
     return urls_not_duplicate
-
-
-def log(verbos):
-    """ Setto i parametri per gestire il file di log """
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s', datefmt='%d/%m/%Y %H:%M:%S')
-    if verbos:
-        # create console handler
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(formatter)
-        logger.addHandler(stream_handler)
-    # FileHandler: outputfile
-    file_handler = logging.FileHandler('./log/main.log')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
 
 
 def arg_parse():
@@ -76,19 +52,15 @@ def saving(esiti):
     df = pd.DataFrame(dati, columns=['Classe', 'Metodo', 'Riga di Codice', 'Tag'])
 
     # Salva il DataFrame in un file CSV
-    df.to_csv(commit.project_name + "_out_2.csv", index =False)
+    df.to_csv(commit.project_name + "_all_1.csv", index =False)
         
 
 
 if __name__ == "__main__":
-    # Log: gestisce sia la console che il salvataggio dei log [-v] (diversi per modulo)
-    verb = arg_parse()  # args parse: verbose choise ?
-    log(verb)  # log file
 
-    logger.info('Inizio Hard Java API')
     urls = get_git_urls()
 
-    # Invocazione metodo con (urls, verbose)
+    # Invocazione metodo con (urls)
     for repo in urls:
         # Set ProgressionBar setup
         tmp_repo = Repository(path_to_repo=repo).traverse_commits()
@@ -102,9 +74,9 @@ if __name__ == "__main__":
         # Core process
         # dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
         
-        MethodOut2.istanceMining(repo, total_commits)
-        MethodOut2.methodMining(repo, total_commits)
-        esiti = MethodOut2.methodScanning(repo, total_commits)
+        MethodAll1.istanceMining(repo, total_commits)
+        MethodAll1.methodMining(repo, total_commits)
+        esiti = MethodAll1.methodScanning(repo, total_commits)
 
         saving(esiti)
         
