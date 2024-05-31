@@ -1,9 +1,8 @@
 from pydriller import Repository
 import pandas as pd
-import numpy as np
 import javalang
 
-from src import Parse, Comment, ProgressionBar
+from src import ProgressionBar
 
 
 # Dizionario per memorizzare tutte le istanze presenti nel progetto
