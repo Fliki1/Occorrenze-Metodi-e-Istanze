@@ -47,9 +47,9 @@ def istanceMining(repo, total_commits):
 dict_method = {}
 """
 {
-    'file1.py': ['metodo1', 'metodo2', 'metodo3'],
-    'file2.py': ['metodoA', 'metodoB'],
-    'file3.py': ['metodoX', 'metodoY', 'metodoZ'],
+    'file1.java': ['metodo1', 'metodo2', 'metodo3'],
+    'file2.java': ['metodoA', 'metodoB'],
+    'file3.java': ['metodoX', 'metodoY', 'metodoZ'],
     ...
 }
 """
@@ -69,8 +69,10 @@ def methodMining(repo, total_commits):
 
                 for method in file.changed_methods:
                     if method.name not in dict_method[name]:
-                        dict_method[name].append(method.name)
+                        separation = method.name.split('::')
+                        dict_method[name].append(separation[1])
 
+    #print(dict_method)
     #methodScanning(repo=repo, total_commits=total_commits)
 
 """
@@ -112,8 +114,21 @@ def methodScanning(repo, total_commits):
                             if node.qualifier:
                                 line_number = node.position[0]  # La posizione è una tupla (linea, colonna)
                                 line = code_in_lines[line_number - 1]  # -1 perché gli indici delle liste iniziano da 0
-                                print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
-                                
+                                #print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
+                                # verifico che l'istanza è della classe di turno e che il metodo sia della classe di studio
+                                if node.qualifier in dict_ist[name] and node.member in dict_method[classe]:
+                                    # verifico se la classe dell'istanza è la stessa da analisi
+                                    #print(classe[:-4], dict_ist[name][node.qualifier])
+                                    if classe[:-5] == dict_ist[name][node.qualifier]:
+                                        print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
+                                """try:
+                                    if classe in dict_ist[name][node.qualifier]:
+                                        print("sono uguali")
+                                    if node.member in dict_method[classe]:
+                                        print(node.member, dict_method[classe])
+                                except KeyError:
+                                    print("Il file o la variabile non sono presenti nel dizionario.")
+                                """                                
                 
 def methodScanningBrutto(repo, total_commits, ciao):
     # Core methods
