@@ -81,9 +81,29 @@ ricerca ESTERNA
 # Dizionario per memorizzare lista modifiche dei singoli file.java
 dict_mod = {}
 
+"""
+dict_mod = {
+    "classefocus1.java": {
+        'metodo1': [
+            ('riga di codice 1', 'tag per riga di codice 1'),
+            ('riga di codice 2', 'tag per riga di codice 2'),
+            # ... altre tuple di (codice, tag) ...
+        ],
+        # ... altri metodi ...
+    },
+    # ... altre classi ...
+}
+"""
+
 def methodScanning(repo, total_commits):
+
     # dati le classi del progetto (nomi file.java)
     for classe in dict_method:
+
+        # setup: crea la classe se non esiste già
+        if classe not in dict_mod:
+            dict_mod[classe] = {}
+
         for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
                                              prefix=classe+' scan:', suffix='Complete', length=50):
             # ricerco l'uso dei suoi metodi tra le modifiche effettuate
@@ -93,7 +113,7 @@ def methodScanning(repo, total_commits):
                     name= file.filename
                     change= file.change_type.name # ADD - MODIFY - DELETE - RENAME
 
-                    # analisi fatta sul diff DELETE 
+                    # analisi fatta sul diff DELETE: è una sola cancellazione di codice
                     if change == "DELETE":
                         deleted_code = '\n'.join(line[1] for line in file.diff_parsed['deleted'])
                         full_code = deleted_code
@@ -113,86 +133,39 @@ def methodScanning(repo, total_commits):
                         if isinstance(node, javalang.tree.MethodInvocation):
                             if node.qualifier:
                                 line_number = node.position[0]  # La posizione è una tupla (linea, colonna)
-                                line = code_in_lines[line_number - 1]  # -1 perché gli indici delle liste iniziano da 0
+                                line = code_in_lines[line_number - 1].strip()  # -1 perché gli indici delle liste iniziano da 0
                                 #print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
                                 # verifico che l'istanza è della classe di turno e che il metodo sia della classe di studio
-                                if node.qualifier in dict_ist[name] and node.member in dict_method[classe]:
-                                    # verifico se la classe dell'istanza è la stessa da analisi
-                                    #print(classe[:-4], dict_ist[name][node.qualifier])
-                                    if classe[:-5] == dict_ist[name][node.qualifier]:
-                                        print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
-                                """try:
-                                    if classe in dict_ist[name][node.qualifier]:
-                                        print("sono uguali")
-                                    if node.member in dict_method[classe]:
-                                        print(node.member, dict_method[classe])
-                                except KeyError:
-                                    print("Il file o la variabile non sono presenti nel dizionario.")
-                                """                                
-                
-def methodScanningBrutto(repo, total_commits, ciao):
-    # Core methods
-    for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
-                                             prefix='Method scan:', suffix='Complete', length=50):
-        # per ogni commit
-        for file in commit.modified_files:
-            # se è stato modificato un file .java
-            if file.filename[-5:] == ".java":
+                                #if node.qualifier in dict_ist[name]
+                                # che il metodo sia della classe di studio
+                                # if node.member in dict_method[classe]:
+                                # verifico se la classe dell'istanza è la stessa sotto analisi
+                                # if classe[:-5] == dict_ist[name][node.qualifier]:
+                                #if classe[:-5] == dict_ist[name][node.qualifier] and node.member in dict_method[classe]:
+                                #    print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
 
-                name = file.filename
-                change = file.change_type.name  # ADD - MODIFY - DELETE - RENAME
-                
-                if name not in dict_mod:
-                    dict_mod[name] = []
-                
-                # analisi fatta sul diff DELETE 
-                if file.change_type.name == "DELETE":
-                    deleted_code = '\n'.join(line[1] for line in file.diff_parsed['deleted'])
-                    full_code = deleted_code
-                else:
-                    # o sull'intero codice sorgente dopo la modifica
-                    full_code = file.source_code
+                                if node.qualifier in dict_ist[name] and node.member in dict_method[classe] and classe[:-5] == dict_ist[name][node.qualifier]:
+                                    #print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
 
-                # can be _None_ if the file is deleted or only renamed
-                if full_code is None:
-                    continue
-
-                # status MultipleComment
-                multicomments = False
-
-                full_code = full_code.split('\n')
-                for ind, row in enumerate(full_code):                    
-                    # ricerca nella linea la presenza di commento o pluri-commento: and skip it
-                    if Comment.isStartMultipleComment(row):  # è l'inizio di un commento multiplo?
-                        multicomments = True
-                    if Comment.isEndMultipleComment(row):    # è la fine di un commento multiplo?
-                        multicomments = False
-                    if multicomments:   # skip fino a quando non si arriva alla fine di un commento multiplo
-                        continue
-                    if Comment.isSingleComment(row):
-                        continue
-
-                    matchMethodCall = Comment.reMethodCall.search(row)
-                    matchInstAss = Comment.reInstAss.search(row)
-
-                    if matchMethodCall or matchInstAss:                        
-                        tokens = Parse.parseLine(row)
-                
-                # Tipo di modifica e metodi modificati
-                for metodo in file.changed_methods:
-                    # print(file.change_type.name, metodo.name)
-                    #df = df.append({"Filename": name, "Methods": metodo.name, "Change type": file.change_type.name}, ignore_index=True)
-
-                    if metodo.name in df['Methods'].values:
-                        index = df[df['Methods'] == metodo.name].index[0]
-                    else:
-
-                        # new method
-                        if file.change_type.name == "ADD":
-                            df.loc[len(df.index)] = switch_newMethod(file.change_type.name, name, metodo.name)[name, metodo.name, 1, 0, 0]
-                        if file.change_type.name == "DELETE":
-                            df.loc[len(df.index)] = [name, metodo.name, 0, 0, 1]
-                        
+                                    #setup: metodo della classe di studio
+                                    if node.member not in dict_mod[classe]:
+                                        dict_mod[classe][node.member] = []
 
 
-    return df_dict
+                                    # SE DELETE inserisco come new entry sempre
+                                    if change == "DELETE":
+                                        dict_mod[classe][node.member].append((line, change))
+                                        continue
+                                    
+                                    # controllo se non è già presente: lo crea (evito shift case)
+                                    if not any(row_in_table == line for row_in_table, tag in dict_mod[classe][node.member]):
+                                        dict_mod[classe][node.member].append((line, change))
+
+    #print(dict_mod)
+    # ordino per riga
+    for classe, metodi in dict_mod.items():
+        for metodo, tuple in metodi.items():
+            # Ordina le tuple
+            tuple.sort()
+
+    return dict_mod

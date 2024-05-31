@@ -4,9 +4,8 @@ import argparse
 import logging
 import gc, os
 
-from src import Api_mod, MethodMod
-
-# TODO: gestione casi di casting: LSHMinHash saved_lsh = (LSHMinHash) ois.readObject();
+from src import MethodOut2
+from src import Api_mod
 
 # create logger
 logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): global logger
@@ -18,10 +17,6 @@ logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): glob
         methods = associa ogni metodo alla sua classe (in relazione all'istanza di appartenenza)
         newmetric = ricerca correlazione modifiche vicine a invocazione di librerie
 """
-dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"], index=[])
-variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
-methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
-
 
 
 def remove_duplicates(urls):
@@ -66,6 +61,24 @@ def path(repo_name):
     if not os.path.exists("./results/" + repo_name):
         os.mkdir("./results/" + repo_name)
 
+def saving(esiti):
+    dati = []
+
+    # Itera su ogni classe, metodo e tupla
+    for classe, metodi in esiti.items():
+        for metodo, tuple in metodi.items():
+            for riga_di_codice, tag in tuple:
+                # Aggiungi i dati a una riga
+                riga = [classe, metodo, riga_di_codice, tag]
+                dati.append(riga)
+
+    # Crea un DataFrame da dati
+    df = pd.DataFrame(dati, columns=['Classe', 'Metodo', 'Riga di Codice', 'Tag'])
+
+    # Salva il DataFrame in un file CSV
+    df.to_csv(commit.project_name + "_out_2.csv", index =False)
+        
+
 
 if __name__ == "__main__":
     # Log: gestisce sia la console che il salvataggio dei log [-v] (diversi per modulo)
@@ -89,31 +102,12 @@ if __name__ == "__main__":
         # Core process
         # dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
         
-        MethodMod.istanceMining(repo, total_commits)
-        MethodMod.methodMining(repo, total_commits)
-        MethodMod.methodScanning(repo, total_commits)
+        MethodOut2.istanceMining(repo, total_commits)
+        MethodOut2.methodMining(repo, total_commits)
+        esiti = MethodOut2.methodScanning(repo, total_commits)
 
-        # Save results
-        for filename, df in dataset.items():
-            #print(filename)
-            if not os.path.exists("./results/" + commit.project_name):
-                os.mkdir("./results/" + commit.project_name)
-            # Printing Dataset
-            #df.set_index(["Filename", "Line number"], inplace=True)
-            #df.sort_index(inplace=True)
-            df.to_csv("./results/" + commit.project_name + "/"+ filename[:-4]+"csv", index=False)
+        saving(esiti)
         
-
-        # Reset Dataframe
-        del dataset
-        del variables
-        del methods
-        #del newmetric
         gc.collect()
-        dataset = pd.DataFrame(columns=["Filename", "Change type", "Line number", "Code", "Tokens", "NumEdit"],
-                               index=[])
-        variables = pd.DataFrame(columns=["Filename", "Varname", "Vartype"], index=[])
-        methods = pd.DataFrame(columns=["Filename", "MethodName", "Class", "CallingClass", "Line number"], index=[])
-
 
     logger.info('Fine del Hard Java API')
