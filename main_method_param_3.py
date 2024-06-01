@@ -43,16 +43,16 @@ def saving(esiti):
     # Itera su ogni classe, metodo e tupla
     for classe, metodi in esiti.items():
         for metodo, tuple in metodi.items():
-            for riga_di_codice, tag in tuple:
+            for riga_di_codice, loc, tag, params in tuple:
                 # Aggiungi i dati a una riga
-                riga = [classe, metodo, riga_di_codice, tag]
+                riga = [classe, metodo, riga_di_codice, loc, params, tag]
                 dati.append(riga)
 
     # Crea un DataFrame da dati
-    df = pd.DataFrame(dati, columns=['Classe', 'Metodo', 'Riga di Codice', 'Tag'])
+    df = pd.DataFrame(dati, columns=['Classe', 'Metodo', 'Riga di Codice', 'LOC', 'Params', 'Tag'])
 
     # Salva il DataFrame in un file CSV
-    df.to_csv(commit.project_name + "_all_1.csv", index =False)
+    df.to_csv(commit.project_name + "_method_params_3.csv", index =False)
         
 
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         MethodParam3.methodMining(repo, total_commits)
         esiti = MethodParam3.methodParamScanning(repo, total_commits)
 
-        #saving(esiti)
+        saving(esiti)
         
         gc.collect()
 

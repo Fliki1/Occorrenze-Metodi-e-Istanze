@@ -79,20 +79,24 @@ def methodParamScanning(repo, total_commits):
             if file.filename == classe:
 
                 # controllo metodi con il precedente commit: ricerca di metodi eliminati
-                lista_metodi_commit_precedenti = [met.long_name for met in file.methods_before]
-                print("PRIMA:", lista_metodi_commit_precedenti)
+                lista_metodi_commit_precedente = [met.long_name for met in file.methods_before]
+                #print("PRIMA:", lista_metodi_commit_precedente)
                 lista_metodi_cur_commit = [met.long_name for met in file.methods]
-                print("DOPO:", lista_metodi_cur_commit)
-                bef_met_long_name_missing = [method for method in lista_metodi_commit_precedenti if method not in lista_metodi_cur_commit]
-                print("DEL ",bef_met_long_name_missing)
+                #print("DOPO:", lista_metodi_cur_commit)
+                # old meth to delete
+                bef_met_long_name_missing = [method for method in lista_metodi_commit_precedente if method not in lista_metodi_cur_commit]
+                # old meth to add (new ADD same method recreated)
+                aft_met_long_name_add = [method for method in lista_metodi_cur_commit if method not in lista_metodi_commit_precedente]
+
+                #print("DEL ",bef_met_long_name_missing)
                 if len(bef_met_long_name_missing) > 0:  # confronto lo faccio su long_name uso parametri per gestire metodi omonimi 
                     for method_miss in bef_met_long_name_missing:
                         method_mod_param = method_miss.split('::')
                         method_name = method_mod_param[1].split('(')
                         dict_mod[classe][method_name[0]].append((method_mod_param[1].strip(), 0, [], "DEL")) # del
-                print("MODIFICATI-ALL:", [m.long_name for m in file.changed_methods])
-                print("MODIFICATI-DEL:", [m.long_name for m in file.changed_methods if m.long_name not in bef_met_long_name_missing])
-                print("===============")
+                #print("MODIFICATI-ALL:", [m.long_name for m in file.changed_methods])
+                #print("MODIFICATI-DEL:", [m.long_name for m in file.changed_methods if m.long_name not in bef_met_long_name_missing])
+                #print("===============")
                 for method_mod in file.changed_methods:
                     if method_mod.long_name not in bef_met_long_name_missing:   # i delete method sono considerati come mod method
                         # new entry
@@ -103,20 +107,23 @@ def methodParamScanning(repo, total_commits):
                             dict_mod[classe][method_mod_name[1]] = []
                             dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # new
                         else:
-                            # metodo già presente: mod
-                            dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "MOD")) # mod
-                        
+                            # case: metodo già presente, verifico se diverso costrutto e params confrontando direttamente long_name (evito shift o metodi nloc modificati) # mod
+                            if dict_mod[classe][method_mod_name[1]][0][0] != method_mod_param[1].strip():
+                                dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "MOD")) # mod
+                                continue
+                            
+                            # i metodi nuovi da ADD (già visti in passato). controllo forse evitabile e append direttamente TODO
+                            if method_mod.long_name in aft_met_long_name_add:
+                                dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # add
+
 
                 
-    #pprint.pprint(dict_mod, indent=4)
-    #TODO troppi del capire perché     
-
-    """
-    # TODO da cambiare
+    
     # ordino per riga
     for classe, metodi in dict_mod.items():
         for metodo, tuple in metodi.items():
             # Ordina le tuple
             tuple.sort()
-
-    return dict_mod"""
+    #pprint.pprint(dict_mod, indent=4)
+    
+    return dict_mod
