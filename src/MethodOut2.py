@@ -69,7 +69,10 @@ def methodMining(repo, total_commits):
                 for method in file.changed_methods:
                     if method.name not in dict_method[name]:
                         separation = method.name.split('::')
-                        dict_method[name].append(separation[1])
+                        if len(separation) > 1:
+                            dict_method[name].append(separation[1])
+                        else:
+                            dict_method[name].append(separation[0])
 
     #print(dict_method)
     #methodScanning(repo=repo, total_commits=total_commits)
