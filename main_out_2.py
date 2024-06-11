@@ -5,7 +5,6 @@ import logging
 import gc, os
 
 from src import MethodOut2
-from src import Api_mod
 
 # create logger
 logger = logging.getLogger(__name__)  # nome del modulo corrente (main.py): global logger

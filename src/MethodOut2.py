@@ -35,11 +35,14 @@ def istanceMining(repo, total_commits):
                 if full_code is None:
                     continue
 
-                tree = javalang.parse.parse(full_code)
-                for path, node in tree:
-                    if isinstance(node, javalang.tree.VariableDeclarator) and isinstance(node.initializer, javalang.tree.ClassCreator):
-                        if node.name not in dict_ist[name]:
-                            dict_ist[name][node.name] = node.initializer.type.name
+                try:
+                    tree = javalang.parse.parse(full_code)
+                    for path, node in tree:
+                        if isinstance(node, javalang.tree.VariableDeclarator) and isinstance(node.initializer, javalang.tree.ClassCreator):
+                            if node.name not in dict_ist[name]:
+                                dict_ist[name][node.name] = node.initializer.type.name
+                except javalang.parser.JavaSyntaxError:
+                    print(f"\nErrore di sintassi del file {name} di commit '{commit.hash}'")
     #print(dict_ist)
 
 
@@ -127,41 +130,46 @@ def methodScanning(repo, total_commits):
                     if full_code is None:
                         continue
                     
-                    # studio dell'intero codice
-                    tree = javalang.parse.parse(full_code)
-                    code_in_lines = full_code.split('\n')
-                    for path, node in tree:
-                        # modifica di una invocazione
-                        if isinstance(node, javalang.tree.MethodInvocation):
-                            if node.qualifier:
-                                line_number = node.position[0]  # La posizione è una tupla (linea, colonna)
-                                line = code_in_lines[line_number - 1].strip()  # -1 perché gli indici delle liste iniziano da 0
-                                #print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
-                                # verifico che l'istanza è della classe di turno e che il metodo sia della classe di studio
-                                #if node.qualifier in dict_ist[name]
-                                # che il metodo sia della classe di studio
-                                # if node.member in dict_method[classe]:
-                                # verifico se la classe dell'istanza è la stessa sotto analisi
-                                # if classe[:-5] == dict_ist[name][node.qualifier]:
-                                #if classe[:-5] == dict_ist[name][node.qualifier] and node.member in dict_method[classe]:
-                                #    print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
+                    try:
+                        # studio dell'intero codice
+                        tree = javalang.parse.parse(full_code)
+                        code_in_lines = full_code.split('\n')
+                        for path, node in tree:
+                            # modifica di una invocazione
+                            if isinstance(node, javalang.tree.MethodInvocation):
+                                if node.qualifier:
+                                    line_number = node.position[0]  # La posizione è una tupla (linea, colonna)
+                                    line = code_in_lines[line_number - 1].strip()  # -1 perché gli indici delle liste iniziano da 0
+                                    #print(f"Ist: {node.qualifier}, Method: {node.member}, Code: {line}")
+                                    # verifico che l'istanza è della classe di turno e che il metodo sia della classe di studio
+                                    #if node.qualifier in dict_ist[name]
+                                    # che il metodo sia della classe di studio
+                                    # if node.member in dict_method[classe]:
+                                    # verifico se la classe dell'istanza è la stessa sotto analisi
+                                    # if classe[:-5] == dict_ist[name][node.qualifier]:
+                                    #if classe[:-5] == dict_ist[name][node.qualifier] and node.member in dict_method[classe]:
+                                    #    print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
 
-                                if node.qualifier in dict_ist[name] and node.member in dict_method[classe] and classe[:-5] == dict_ist[name][node.qualifier]:
-                                    #print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
+                                    if node.qualifier in dict_ist[name] and node.member in dict_method[classe] and classe[:-5] == dict_ist[name][node.qualifier]:
+                                        #print(f"File: {classe}/{name} Ist: {node.qualifier}, Method: {node.member}, di {dict_ist[name][node.qualifier]} Code: {line}")
 
-                                    #setup: metodo della classe di studio
-                                    if node.member not in dict_mod[classe]:
-                                        dict_mod[classe][node.member] = []
+                                        #setup: metodo della classe di studio
+                                        if node.member not in dict_mod[classe]:
+                                            dict_mod[classe][node.member] = []
 
 
-                                    # SE DELETE inserisco come new entry sempre
-                                    if change == "DELETE":
-                                        dict_mod[classe][node.member].append((line, change))
-                                        continue
-                                    
-                                    # controllo se non è già presente: lo crea (evito shift case)
-                                    if not any(row_in_table == line for row_in_table, tag in dict_mod[classe][node.member]):
-                                        dict_mod[classe][node.member].append((line, change))
+                                        # SE DELETE inserisco come new entry sempre
+                                        if change == "DELETE":
+                                            dict_mod[classe][node.member].append((line, change))
+                                            continue
+                                        
+                                        # controllo se non è già presente: lo crea (evito shift case)
+                                        if not any(row_in_table == line for row_in_table, tag in dict_mod[classe][node.member]):
+                                            dict_mod[classe][node.member].append((line, change))
+                    
+                    except javalang.parser.JavaSyntaxError:
+                        print(f"\nErrore di sintassi del file {name} di commit '{commit.hash}'")
+
 
     #print(dict_mod)
     # ordino per riga
