@@ -70,9 +70,6 @@ if __name__ == "__main__":
         git = Git(commit.project_path)
         logger.debug(f'Project: {commit.project_name} #Commits: {git.total_commits()}')  # total commits
         total_commits = git.total_commits()
-
-        # Core process
-        # dataset = Api_mod.apiMining(variables, methods, repo, total_commits, verb)
         
         MethodParam3.methodMining(repo, total_commits)
         esiti = MethodParam3.methodParamScanning(repo, total_commits)
