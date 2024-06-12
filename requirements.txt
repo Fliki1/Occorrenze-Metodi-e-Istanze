@@ -12,3 +12,5 @@ pytz==2022.1
 six==1.16.0
 smmap==5.0.0
 types-pytz==2022.1.2
+pandas
+javalang
