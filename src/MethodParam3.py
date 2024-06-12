@@ -104,19 +104,23 @@ def methodParamScanning(repo, total_commits):
                             # new entry
                             method_mod_name = method_mod.name.split('::')
                             method_mod_param = method_mod.long_name.split('::')
-                            if method_mod_name[1] not in dict_mod[classe]:
+                            ind_method = 0
+                            if len(method_mod_name) > 1:    # len([oggetto, metodo])
+                                ind_method = 1
+
+                            if method_mod_name[ind_method] not in dict_mod[classe]:
                                 #print("nuovo metodo ADD: ", method_mod_param[1].strip(), "not in DEL ", bef_met_long_name_missing)
-                                dict_mod[classe][method_mod_name[1]] = []
-                                dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # new
+                                dict_mod[classe][method_mod_name[ind_method]] = []
+                                dict_mod[classe][method_mod_name[ind_method]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # new
                             else:
                                 # case: metodo già presente, verifico se diverso costrutto e params confrontando direttamente long_name (evito shift o metodi nloc modificati) # mod
-                                if dict_mod[classe][method_mod_name[1]][0][0] != method_mod_param[1].strip():
-                                    dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "MOD")) # mod
+                                if dict_mod[classe][method_mod_name[ind_method]][0][0] != method_mod_param[1].strip():
+                                    dict_mod[classe][method_mod_name[ind_method]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "MOD")) # mod
                                     continue
                                 
                                 # i metodi nuovi da ADD (già visti in passato). controllo forse evitabile e append direttamente TODO
                                 if method_mod.long_name in aft_met_long_name_add:
-                                    dict_mod[classe][method_mod_name[1]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # add
+                                    dict_mod[classe][method_mod_name[ind_method]].append((method_mod_param[1].strip(), method_mod.nloc, method_mod.parameters, "ADD")) # add
 
 
                 
