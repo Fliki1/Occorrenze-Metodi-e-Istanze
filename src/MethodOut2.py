@@ -103,14 +103,14 @@ dict_mod = {
 def methodScanning(repo, total_commits):
 
     # dati le classi del progetto (nomi file.java)
-    for classe in dict_method:
+    for ind, classe in enumerate(dict_method):
 
         # setup: crea la classe se non esiste già
         if classe not in dict_mod:
             dict_mod[classe] = {}
 
         for commit in ProgressionBar.progressBar(Repository(path_to_repo=repo).traverse_commits(), total_commits,
-                                             prefix=classe+' scan:', suffix='Complete', length=50):
+                                             prefix=str(ind)+"/"+str(len(dict_method))+" "+classe+' scan:', suffix='Complete', length=50):
             # ricerco l'uso dei suoi metodi tra le modifiche effettuate
             for file in commit.modified_files:
                 # modifica avvenuta su file diverso dalla classe di studio
