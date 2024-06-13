@@ -43,6 +43,10 @@ def istanceMining(repo, total_commits):
                                 dict_ist[name][node.name] = node.initializer.type.name
                 except javalang.parser.JavaSyntaxError:
                     print(f"\nErrore di sintassi del file {name} di commit '{commit.hash}'")
+                except javalang.tokenizer.LexerError as e:
+                    print(f"\nErrore di analisi del file {name} di commit '{commit.hash}' {e}")
+                except Exception as e:
+                    print(f'Si è verificato un errore generico: {e}')
     #print(dict_ist)
 
 
