@@ -92,11 +92,15 @@ def methodParamScanning(repo, total_commits):
                     if len(bef_met_long_name_missing) > 0:  # confronto lo faccio su long_name uso parametri per gestire metodi omonimi 
                         for method_miss in bef_met_long_name_missing:
                             method_mod_param = method_miss.split('::')
-                            print(method_mod_param)
-                            method_name = method_mod_param[1].split('(')
+                            ind_mod_method = 0
+                            if len(method_mod_param) > 1:
+                                ind_mod_method = 1
+                            
+                            #print(method_mod_param)
+                            method_name = method_mod_param[ind_mod_method].split('(')
                             if method_name[0] not in dict_mod[classe]:  # se non presente ancora
                                 dict_mod[classe][method_name[0]] = []
-                            dict_mod[classe][method_name[0]].append((method_mod_param[1].strip(), 0, [], "DEL")) # del
+                            dict_mod[classe][method_name[0]].append((method_mod_param[ind_mod_method].strip(), 0, [], "DEL")) # del
                     #print("MODIFICATI-ALL:", [m.long_name for m in file.changed_methods])
                     #print("MODIFICATI-DEL:", [m.long_name for m in file.changed_methods if m.long_name not in bef_met_long_name_missing])
                     #print("===============")
