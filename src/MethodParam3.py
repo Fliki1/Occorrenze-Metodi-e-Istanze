@@ -92,6 +92,7 @@ def methodParamScanning(repo, total_commits):
                     if len(bef_met_long_name_missing) > 0:  # confronto lo faccio su long_name uso parametri per gestire metodi omonimi 
                         for method_miss in bef_met_long_name_missing:
                             method_mod_param = method_miss.split('::')
+                            print(method_mod_param)
                             method_name = method_mod_param[1].split('(')
                             if method_name[0] not in dict_mod[classe]:  # se non presente ancora
                                 dict_mod[classe][method_name[0]] = []
@@ -104,7 +105,7 @@ def methodParamScanning(repo, total_commits):
                             # new entry
                             method_mod_name = method_mod.name.split('::')
                             method_mod_param = method_mod.long_name.split('::')
-                            print(method_mod_name, method_mod_param)
+                            #print(method_mod_name, method_mod_param)
                             ind_method = 0
                             ind_param = 0
                             if len(method_mod_name) > 1 and len(method_mod_param) > 1:    # len([oggetto, metodo]) controllo inutile una condizione implica l'altra
