@@ -175,8 +175,14 @@ def methodScanning(repo, total_commits):
                                             dict_mod[classe][node.member].append((line, change))
                     
                     except javalang.parser.JavaSyntaxError:
-                        print(f"\nErrore di sintassi del file {name} di commit: '{commit.hash}'")
-
+                        pass
+                        #print(f"\nErrore di sintassi del file {name} di commit: '{commit.hash}'")
+                    except javalang.tokenizer.LexerError as e:
+                        pass
+                        #print(f"\nErrore di analisi del file {name} di commit '{commit.hash}' {e}")
+                    except Exception as e:
+                        pass
+                        #print(f'Si è verificato un errore generico: {e}')
 
     #print(dict_mod)
     # ordino per riga
